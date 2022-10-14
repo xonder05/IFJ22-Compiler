@@ -22,12 +22,9 @@ typedef enum
 } Keyword;
 
 
-enum Token_type
+typedef enum
 {
-    TOKEN_BLANK0,
-    TOKEN_BLANK1,
-    TOKEN_BLANK2,
-    TOKEN_BLANK3,
+    
     TOKEN_VAR_ID,       // $smthing
     TOKEN_QUEST_MARK,   // ?
     TOKEN_END_TAG,      // ?>
@@ -42,7 +39,7 @@ enum Token_type
     TOKEN_START_TAG,    // <?
     TOKEN_EQUAL,        // =
     TOKEN_EQUAL2,       // ===
-    TOKNE_NOT_EQUAL,    // !==
+    TOKEN_NOT_EQUAL,    // !==
     TOKEN_L_PAR,        // (
     TOKEN_R_PAR,        // )
     TOKEN_L_BRAC,       // {
@@ -55,14 +52,55 @@ enum Token_type
     TOKEN_KEYWORD,      // if,...   (NENI V AUTOMATU)
     TOKEN_INT,          // INT
     TOKEN_FLOAT,        // FLOAT
+    TOKEN_EOF,          // EOF
+    TOKEN_BLANK0,       // errors
+    TOKEN_BLANK1,
+    TOKEN_BLANK2,
+    TOKEN_BLANK3,
 
-};
+}Token_type;
 
-// TOKEN
+typedef enum
+{
+    STATE_VAR_ID,       // $smthing
+    STATE_VAR_ID_START, // non finishing $
+    STATE_QUEST_MARK,   // ?
+    STATE_BIGGER,       // >
+    STATE_SMALLER,      // <
+    STATE_EQUAL,        // =      
+    STATE_EQUAL1,       // == non finishing 
+    STATE_NOT_EQUAL1,   // ! non finishing
+    STATE_NOT_EQUAL2,   // != non 
+    STATE_STRING_READ,  // "x" non finishing
+    STATE_ID,            // keyword or function id  (NENI V AUTOMATU)
+    STATE_INT,          // INT
+    STATE_FLOAT,        // FLOAT
+    STATE_COMMENT,      // / non finishing
+    STATE_LINE_COMMENT, // // non finishing
+    STATE_BLOCK_COM,    // /* non finishing
+    STATE_BLOCK_COM1,   // /* * non finishing
+    STATE_START,         // just the start, non finishing
+    STATE_BLANK0,
+    STATE_BLANK1,
+    STATE_BLANK2,
+    STATE_BLANK3,
+
+}State_t;
+
+// TOKEN struct
 typedef struct token{
-    enum Token_type type;
+    Token_type type; // enum
     union {
-        int int_value;
-        float float_value;
+        long int int_value;
+        double float_value;
+        Dyn_String *string;
+        Keyword keyword;
     };
 } token_t;
+
+// return next token (struct, so NO POINTER) 
+// if token contain *string value, string has to be fried with dyn_string_free(token.string)
+token_t get_token();
+
+// we dont have to free token, but optional dynamic string in it
+void free_token(token_t token);
