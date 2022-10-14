@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define STR_LEM_INC 10
+#define STR_LEN_INC 10
 
 Dyn_String *dyn_string_init()
 {
@@ -14,13 +14,13 @@ Dyn_String *dyn_string_init()
     }
 
 
-    dyn_str->string = (char*) malloc(STR_LEM_INC);
+    dyn_str->string = (char*) malloc(STR_LEN_INC);
     if(dyn_str->string==NULL)
     {
         return NULL;
     }
     dyn_str->size = 0;
-    dyn_str ->alloc_size = STR_LEM_INC;
+    dyn_str ->alloc_size = STR_LEN_INC;
     dyn_str->string[0] = '\0';
     return dyn_str;
 
@@ -42,7 +42,7 @@ bool dyn_string_add_char(Dyn_String *dyn_str, char c)
 {
     if (dyn_str->size + 1 >= dyn_str->alloc_size)
     {   
-        unsigned new_size = dyn_str->alloc_size + STR_LEM_INC;
+        unsigned new_size = dyn_str->alloc_size + STR_LEN_INC;
         dyn_str->string = (char*)realloc(dyn_str->string,new_size);
         if(dyn_str==NULL)
         {

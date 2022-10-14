@@ -1,1 +1,453 @@
 #include "scanner.h"
+#include "testing_utils.h"
+#include <ctype.h>
+#include <string.h>
+
+
+
+
+token_t get_token()
+{
+    int c; // store char
+    token_t token;
+    State_t state = STATE_START;
+
+    // has to be freed with dyn_string_free(string)
+    // unless token with *string value is returned
+    // then caller has to free
+    Dyn_String *string = dyn_string_init();
+
+    while(true){
+        
+        c = getc(stdin);
+        switch(state)
+        {
+            case STATE_START:                
+                if(c== EOF){
+                    token.type = TOKEN_EOF;
+                    dyn_string_free(string);
+                    return token;
+                }
+                // whitespace
+                else if(isspace(c)){
+                    break;
+                }
+                else if(isdigit(c)){
+                    state=STATE_INT;
+                    dyn_string_add_char(string,c);
+                    break;
+                }
+
+                else if(isalpha(c) || c == '_'){
+                    state = STATE_ID;
+                    dyn_string_add_char(string,c);
+                    break;
+                }
+
+                else if(c == '/'){
+                    state = STATE_COMMENT;
+                    break;
+                }
+
+                else if(c == '"'){
+                    state = STATE_STRING_READ;
+                    break;
+                }
+                
+                else if(c == '*'){
+                    token.type = TOKEN_MULTIPLY;
+                    dyn_string_free(string);
+                    return token;
+
+                    break;
+                }
+
+                else if(c == '-'){
+                    token.type = TOKEN_MINUS;
+                    dyn_string_free(string);
+                    return token;
+                }
+
+                else if(c == '+'){
+                    token.type = TOKEN_PLUS;
+                    dyn_string_free(string);
+                    return token;
+                }
+
+                else if(c == '('){
+                    token.type = TOKEN_L_PAR;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else if(c == ')'){
+                    token.type = TOKEN_R_PAR;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else if(c == '{'){
+                    token.type = TOKEN_L_BRAC;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else if(c == '}'){
+                    token.type = TOKEN_R_BRAC;
+                    dyn_string_free(string);
+                    return token;
+                }
+
+                else if(c == '!'){
+                    state = STATE_NOT_EQUAL1;
+                    break;
+                }
+
+                else if(c == '='){
+                    state = STATE_EQUAL;
+                    break;
+                }
+
+                else if(c == '<'){
+                    state = STATE_SMALLER;
+                    break;
+                }
+
+                else if(c == '>'){
+                    state = STATE_BIGGER;
+                    break;
+                }
+
+                else if(c == '.'){
+                    token.type = TOKEN_DOT;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else if(c == ','){
+                    token.type = TOKEN_COMMA;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else if(c == ':'){
+                    token.type = TOKEN_COLON;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else if(c == ';'){
+                    token.type = TOKEN_SEMICOLON;
+                    dyn_string_free(string);
+                    return token;
+                }
+
+                else if(c == '?'){
+                    state = STATE_QUEST_MARK;
+                    break;
+                }
+
+                else if(c == '$'){
+                    state = STATE_VAR_ID_START;
+                    break;
+                }
+
+                else{
+                    state = STATE_BLANK3;
+                    break;
+                }
+
+            break;
+
+            case STATE_INT:
+                if(isdigit(c)){
+                    dyn_string_add_char(string,c);
+                    break;
+                }
+                else if(c=='.'){
+                    dyn_string_add_char(string,c);
+                    state = STATE_FLOAT;
+                    break;
+                }
+                else{
+                    ungetc(c,stdin);
+                    token.type = TOKEN_INT;
+                    token.int_value =strtol(string->string,NULL,10);
+                    dyn_string_free(string);
+                    return token;
+                }
+            break;
+
+            case STATE_FLOAT:
+                if(isdigit(c)){
+                    dyn_string_add_char(string,c);
+                    break;
+                }
+                else{
+                    ungetc(c,stdin);
+                    token.type = TOKEN_FLOAT;
+                    token.float_value = strtod(string->string,NULL);
+                    dyn_string_free(string);
+                    return token;
+                }
+                break;
+            
+            case STATE_ID:
+                if(isalnum(c)|| c == '_'){
+                    dyn_string_add_char(string,c);
+                    break;
+                }
+                else{
+                    ungetc(c,stdin);
+                    if(!strcmp((const char*) string->string,"else")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_ELSE;
+                        return token;
+                    }if(!strcmp((const char*) string->string,"float")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_FLOAT;
+                        return token;
+                    }if(!strcmp((const char*) string->string,"function")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_FUNCTION;
+                        return token;
+                    }if(!strcmp((const char*) string->string,"if")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_IF;
+                        return token;
+                    }if(!strcmp((const char*) string->string,"null")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_NULL;
+                        return token;
+                    }if(!strcmp((const char*) string->string,"return")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_RETURN;
+                        return token;
+                    }if(!strcmp((const char*) string->string,"string")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_STRING;
+                        return token;
+                    }if(!strcmp((const char*) string->string,"void")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_VOID;
+                        return token;
+                    }if(!strcmp((const char*) string->string,"while")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_WHILE;
+                        return token;
+                    }
+                    // asi bude problem s free nekdy
+
+                    token.type = TOKEN_FUNC_ID;
+                    token.string = string;
+                    return token;
+                }
+                break;
+            
+            case STATE_COMMENT:
+                if(c=='/'){
+                    state = STATE_LINE_COMMENT;
+                }
+                else if(c == '*'){
+                    state = STATE_BLOCK_COM;
+                }
+                else{
+                    state = STATE_BLANK0;
+                    ungetc(c,stdin);
+                }
+                break;
+            
+            case STATE_LINE_COMMENT:
+                if(c == EOF){
+                    state = STATE_BLANK0;
+                    ungetc(c,stdin);
+                }
+                else if(c == '\n'){
+                    state = STATE_START;
+                }
+                break;
+
+            case STATE_BLOCK_COM:
+                if(c == EOF){
+                    state = STATE_BLANK0;
+                    ungetc(c,stdin);
+                }
+                else if(c== '*'){
+                    state = STATE_BLOCK_COM1;
+                }
+                break;
+            
+            case STATE_BLOCK_COM1:
+                if(c == '/'){
+                    state = STATE_START;
+                }
+                else{
+                    state = STATE_BLOCK_COM1;
+                }
+                break;
+            
+            case STATE_STRING_READ:
+                if(c == EOF){
+                    ungetc(c,stdin);
+                    state = STATE_BLANK0;
+                }
+                else if(c == '"'){
+                    token.type = TOKEN_STRING;
+                    token.string = string;
+                    return token;
+                }
+                else{
+                    dyn_string_add_char(string,c);
+                }
+                break;
+            
+            case STATE_NOT_EQUAL1:
+                if(c=='='){
+                    state = STATE_NOT_EQUAL2;
+                }
+                else{
+                    ungetc(c,stdin);
+                    state = STATE_BLANK2;
+                }
+                break;
+
+            case STATE_NOT_EQUAL2:
+                if(c=='='){
+                    token.type = TOKEN_NOT_EQUAL;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else{
+                    state = STATE_BLANK2;
+                }
+                break;
+
+            case STATE_EQUAL:
+                if(c == '='){
+                    state = STATE_EQUAL1;
+                }
+                else{
+                    ungetc(c,stdin);
+                    token.type = TOKEN_EQUAL;
+                    dyn_string_free(string);
+                    return token;
+                }
+                break;
+            
+            case STATE_EQUAL1:
+                if(c == '='){
+                    token.type = TOKEN_EQUAL2;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else{
+                    ungetc(c,stdin);
+                    state = STATE_BLANK2;
+                }
+                break;
+
+            case STATE_SMALLER:
+                if (c == '='){
+                    token.type = TOKEN_SMALL_EQ;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else if(c == '?'){
+                    token.type = TOKEN_START_TAG;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else{
+                    token.type = TOKEN_EQUAL;
+                    ungetc(c,stdin);
+                    dyn_string_free(string);
+                    return token;
+                }
+                break;
+            
+            case STATE_BIGGER:
+                if(c == '='){
+                    token.type = TOKEN_BIGGER_EQ;
+                    ungetc(c,stdin);
+                    dyn_string_free(string);
+                    return token;
+                }
+                else{
+                    token.type = TOKEN_BIGGER;
+                    dyn_string_free(string);
+                    return token;
+                }
+                break;
+            
+            case STATE_QUEST_MARK:
+                if(c == '>'){
+                    token.type = TOKEN_END_TAG;
+                    dyn_string_free(string);
+                    return token;
+                }
+                else{
+                    token.type = TOKEN_QUEST_MARK;
+                    ungetc(c,stdin);
+                    dyn_string_free(string);
+                    return token;
+                }
+                break;
+            
+            case STATE_VAR_ID_START:
+                if( isalpha(c)||c=='_'){
+                    state = STATE_VAR_ID;
+                    dyn_string_add_char(string,c);
+                }
+                else{
+                    state = STATE_BLANK1;
+                    ungetc(c,stdin);
+                }
+                break;
+            
+            case STATE_VAR_ID:
+                if(isalnum(c)||c=='_'){
+                    dyn_string_add_char(string,c);
+                }
+                else{
+                    ungetc(c,stdin);
+                    token.type = TOKEN_VAR_ID;
+                    token.string = string;
+                    return token;                    
+                }
+                break;
+            
+
+            //TODO
+            case STATE_BLANK0:
+                dyn_string_free(string);
+                token.type = TOKEN_BLANK0;
+                return token;
+            case STATE_BLANK1:
+                dyn_string_free(string);
+                token.type = TOKEN_BLANK1;
+                return token;
+            case STATE_BLANK2:
+                dyn_string_free(string);
+                token.type = TOKEN_BLANK2;
+                return token;
+            // default = blank3
+            default:
+                token.type = TOKEN_BLANK3;
+                return token;
+        }       
+
+
+    }
+}
+
+
+void free_token(token_t token){
+    if(token.type == TOKEN_STRING || token.type == TOKEN_VAR_ID || token.type == TOKEN_FUNC_ID)
+    {
+        dyn_string_free(token.string);
+    }
+    return;
+}
