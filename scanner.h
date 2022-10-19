@@ -53,10 +53,14 @@ typedef enum
     TOKEN_INT,          // INT
     TOKEN_FLOAT,        // FLOAT
     TOKEN_EOF,          // EOF
+
     TOKEN_BLANK0,       // errors
     TOKEN_BLANK1,
     TOKEN_BLANK2,
     TOKEN_BLANK3,
+
+    TOKEN_PROLOG,   // declare(strict_types=1);
+    TOKEN_PROLOG_FAIL,  // anything else
 
 }Token_type;
 
@@ -100,7 +104,13 @@ typedef struct token{
 
 // return next token (struct, so NO POINTER) 
 // if token contain *string value, string has to be fried with dyn_string_free(token.string)
-token_t get_token();
+// number of token (starting from 0), just for proper scanning of prolog
+token_t get_token(int token_num);
 
-// we dont have to free token, but optional dynamic string in it
+// deals with the "declare(static_type=1);"
+// returns either TOKEN_PROLOG or TOKEN_PROLOG_FAIL
+token_t deal_with_prolog();
+
+
+// free dynamic string strored inside of token_t struct
 void free_token(token_t token);

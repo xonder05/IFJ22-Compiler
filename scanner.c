@@ -4,18 +4,26 @@
 #include <string.h>
 
 
+token_t deal_with_prolog();
 
-
-token_t get_token()
+token_t get_token(int token_num)
 {
     int c; // store char
     token_t token;
     State_t state = STATE_START;
 
+    
+    // dealing with prolog: declare(...) separatly outside from fsm
+    if(token_num == 1){
+        return deal_with_prolog();
+    }
+
+
     // has to be freed with dyn_string_free(string)
-    // unless token with *string value is returned
-    // then caller has to free
+    // unless token with *string in it is returned
+    // then caller has to call free_token() on it
     Dyn_String *string = dyn_string_init();
+
 
     while(true){
         
@@ -442,6 +450,134 @@ token_t get_token()
 
     }
 }
+
+
+
+// i use free_token() on every token, in case some had dyn_string in it
+token_t deal_with_prolog()
+{
+    int c;
+    token_t token;
+    token.type = TOKEN_PROLOG_FAIL;
+    c = getc(stdin);
+
+    // after start tag "<?" white space have to follow
+    if(!isspace(c))
+    {
+        free_token(token);
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;
+    }
+
+    // now we have to check that "declare(strict_types=1);"
+    // was send to stdin, with any amount of white spaces or comments in between
+
+    // we check if get_token() return right tokens for "declare(strict_types=1);"
+    // otherwise return token leading to lexical error
+
+    // "declare"
+    token = get_token(5);
+    if ( token.type == TOKEN_FUNC_ID)
+    {
+        if(!strcmp((const char*) token.string->string,"declare"));
+        else
+        {   
+            free_token(token);
+            token.type = TOKEN_PROLOG_FAIL;
+            return token;
+        }
+    }
+    else
+    {
+        free_token(token);
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;
+    }
+    free_token(token);
+
+    // '('
+    token = get_token(5);
+    if(token.type != TOKEN_L_PAR)
+    {
+        free_token(token);
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;
+    }
+
+    // strict_types
+    token = get_token(5);
+    if ( token.type == TOKEN_FUNC_ID)
+    {
+        if(!strcmp((const char*) token.string->string,"strict_types"));
+        else
+        {   
+            free_token(token);
+            token.type = TOKEN_PROLOG_FAIL;
+            return token;
+        }
+    }
+    else
+    {
+        free_token(token);
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;
+    }    
+    free_token(token);
+    
+
+    // '='
+    token = get_token(5);
+    if(token.type != TOKEN_EQUAL)
+    {
+        free_token(token);
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;
+    }
+
+    // 1
+    token = get_token(5);
+    if ( token.type == TOKEN_INT)
+    {
+        if(token.int_value == 1);
+        else
+        {   
+        free_token(token);
+            token.type = TOKEN_PROLOG_FAIL;
+            return token;
+        }
+    }
+    else
+    {
+        free_token(token);
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;
+    }
+
+
+    // ')'
+    token = get_token(5);
+    if(token.type != TOKEN_R_PAR)
+    {
+        free_token(token);
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;
+    }    
+
+    // ')'
+    token = get_token(5);
+    if(token.type != TOKEN_SEMICOLON)
+    {
+        free_token(token);
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;
+    }    
+
+    // everything was alrigt
+    token.type = TOKEN_PROLOG;
+    return token;
+
+}
+
 
 
 void free_token(token_t token){
