@@ -17,13 +17,13 @@ Dyn_String *dyn_string_init()
     dyn_str->string = (char*) malloc(STR_LEN_INC);
     if(dyn_str->string==NULL)
     {
+        free(dyn_str);
         return NULL;
     }
     dyn_str->size = 0;
-    dyn_str ->alloc_size = STR_LEN_INC;
+    dyn_str->alloc_size = STR_LEN_INC;
     dyn_str->string[0] = '\0';
     return dyn_str;
-
 }
 
 void dyn_string_clear(Dyn_String *dyn_str)
