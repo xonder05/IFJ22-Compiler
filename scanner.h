@@ -76,6 +76,7 @@ typedef enum
     STATE_NOT_EQUAL1,   // ! non finishing
     STATE_NOT_EQUAL2,   // != non 
     STATE_STRING_READ,  // "x" non finishing
+    STATE_STRING_ESCAPE,  // "x\.." non finishing
     STATE_ID,            // keyword or function id  (NENI V AUTOMATU)
     STATE_INT,          // INT
     STATE_FLOAT,        // FLOAT
