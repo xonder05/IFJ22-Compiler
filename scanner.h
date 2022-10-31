@@ -47,12 +47,14 @@ typedef enum
     TOKEN_PLUS,         // +
     TOKEN_MINUS,        // -
     TOKEN_MULTIPLY,     // *
+    TOKEN_DIVIDE,       // /
     TOKEN_STRING,       // "xxxx"
     TOKEN_FUNC_ID,      // id()  (NENI V AUTOMATU)
     TOKEN_KEYWORD,      // if,...   (NENI V AUTOMATU)
     TOKEN_INT,          // INT
     TOKEN_FLOAT,        // FLOAT
     TOKEN_EOF,          // EOF
+    TOKEN_EOF_FAIL,    
 
     TOKEN_BLANK0,       // errors
     TOKEN_BLANK1,
@@ -76,6 +78,7 @@ typedef enum
     STATE_NOT_EQUAL1,   // ! non finishing
     STATE_NOT_EQUAL2,   // != non 
     STATE_STRING_READ,  // "x" non finishing
+    STATE_STRING_ESCAPE,  // "x\.." non finishing, not in fsm
     STATE_ID,            // keyword or function id  (NENI V AUTOMATU)
     STATE_INT,          // INT
     STATE_FLOAT,        // FLOAT
@@ -110,6 +113,11 @@ token_t get_token(int token_num);
 // deals with the "declare(static_type=1);"
 // returns either TOKEN_PROLOG or TOKEN_PROLOG_FAIL
 token_t deal_with_prolog();
+
+// called after ?>
+// returns either TOKEN_EOF or TOKEN_EOF_FAIL
+// after ?> cant be anything else than EOF or \nEOF
+token_t deal_with_end();
 
 
 // free dynamic string strored inside of token_t struct
