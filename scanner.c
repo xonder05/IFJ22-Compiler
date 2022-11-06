@@ -215,6 +215,11 @@ token_t get_token(int token_num)
                         token.type = TOKEN_KEYWORD;
                         token.keyword = KEYWORD_FLOAT;
                         return token;
+                    }if(!strcmp((const char*) string->string,"int")){
+                        dyn_string_free(string);
+                        token.type = TOKEN_KEYWORD;
+                        token.keyword = KEYWORD_INT;
+                        return token;
                     }if(!strcmp((const char*) string->string,"function")){
                         dyn_string_free(string);
                         token.type = TOKEN_KEYWORD;
@@ -585,8 +590,43 @@ token_t get_token(int token_num)
                     dyn_string_free(string);
                     return token;
                 }
+                else if(c == 'i' || c == 'f' || c == 's')
+                {
+                    ungetc(c,stdin);
+                    free_token(token);
+                    token = get_token(5);
+                    if(token.type != TOKEN_KEYWORD)
+                    {
+                        free_token(token);
+                        token.type = TOKEN_BLANK0;
+                        return token;
+                    }
+
+                    if(token.keyword == KEYWORD_INT)
+                    {
+                        token.keyword = KEYWORD_Q_INT;
+                        return token;
+                    }
+                    else if(token.keyword == KEYWORD_FLOAT)
+                    {
+                        token.keyword = KEYWORD_Q_FLOAT;
+                        return token;
+                    }
+                    else if(token.keyword == KEYWORD_STRING)
+                    {
+                        token.keyword = KEYWORD_Q_STRING;
+                        return token;
+                    }
+                    else
+                    {
+                        free_token(token);
+                        token.type = TOKEN_BLANK0;
+                        return token;
+                    }
+
+                }
                 else{
-                    token.type = TOKEN_QUEST_MARK;
+                    token.type = TOKEN_BLANK0;
                     ungetc(c,stdin);
                     dyn_string_free(string);
                     return token;

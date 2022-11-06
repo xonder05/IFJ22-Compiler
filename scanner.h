@@ -11,12 +11,15 @@ typedef enum
 {
 	KEYWORD_ELSE,
 	KEYWORD_FLOAT,
+	KEYWORD_Q_FLOAT,
 	KEYWORD_FUNCTION,
 	KEYWORD_IF,
 	KEYWORD_INT,
+	KEYWORD_Q_INT,
 	KEYWORD_NULL,
 	KEYWORD_RETURN,
 	KEYWORD_STRING,
+	KEYWORD_Q_STRING,
 	KEYWORD_VOID,
 	KEYWORD_WHILE,
 } Keyword;
@@ -26,7 +29,6 @@ typedef enum
 {
     
     TOKEN_VAR_ID,       // $smthing
-    TOKEN_QUEST_MARK,   // ?
     TOKEN_END_TAG,      // ?>
     TOKEN_SEMICOLON,    // ;
     TOKEN_COLON,        // :

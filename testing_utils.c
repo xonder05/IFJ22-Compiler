@@ -23,16 +23,18 @@ void print_token(token_t *token)
     {
         if(token->keyword == KEYWORD_ELSE) printf("TOKEN_KEYWORD, value = KEYWORD_ELSE\n");
         else if(token->keyword == KEYWORD_FLOAT) printf("TOKEN_KEYWORD, value = KEYWORD_FLOAT\n");
+        else if(token->keyword == KEYWORD_Q_FLOAT) printf("TOKEN_KEYWORD, value = KEYWORD_Q_FLOAT\n");
         else if(token->keyword == KEYWORD_FUNCTION) printf("TOKEN_KEYWORD, value = KEYWORD_FUNCTION\n");
         else if(token->keyword == KEYWORD_IF) printf("TOKEN_KEYWORD, value = KEYWORD_IF\n");
         else if(token->keyword == KEYWORD_INT) printf("TOKEN_KEYWORD, value = KEYWORD_INT\n");
+        else if(token->keyword == KEYWORD_Q_INT) printf("TOKEN_KEYWORD, value = KEYWORD_Q_INT\n");
         else if(token->keyword == KEYWORD_NULL) printf("TOKEN_KEYWORD, value = KEYWORD_NULL\n");
         else if(token->keyword == KEYWORD_RETURN) printf("TOKEN_KEYWORD, value = KEYWORD_RETURN\n");
         else if(token->keyword == KEYWORD_STRING) printf("TOKEN_KEYWORD, value = KEYWORD_STRING\n");
+        else if(token->keyword == KEYWORD_Q_STRING) printf("TOKEN_KEYWORD, value = KEYWORD_Q_STRING\n");
         else if(token->keyword == KEYWORD_VOID) printf("TOKEN_KEYWORD, value = KEYWORD_VOID\n");
         else if(token->keyword == KEYWORD_WHILE) printf("TOKEN_KEYWORD, value = KEYWORD_WHILE\n");   
     }
-    else if(token->type == TOKEN_QUEST_MARK) printf("TOKEN_QUEST_MARK\n");
     else if(token->type == TOKEN_END_TAG) printf("TOKEN_END_TAG\n");
     else if(token->type == TOKEN_SEMICOLON) printf("TOKEN_SEMICOLON\n");
     else if(token->type == TOKEN_COLON) printf("TOKEN_COLON\n");
