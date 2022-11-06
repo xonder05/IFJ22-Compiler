@@ -52,13 +52,15 @@ void print_token(token_t *token)
     else if(token->type == TOKEN_PLUS) printf("TOKEN_PLUS\n");
     else if(token->type == TOKEN_MINUS) printf("TOKEN_MINUS\n");
     else if(token->type == TOKEN_MULTIPLY) printf("TOKEN_MULTIPLY\n");
+    else if(token->type == TOKEN_DIVIDE) printf("TOKEN_DIVIDE\n");
     else if(token->type == TOKEN_PROLOG) printf("TOKEN_PROLOG\n");
     else if(token->type == TOKEN_PROLOG_FAIL) printf("TOKEN_PROLOG_FAIL\n");
 
 
     else if(token->type == TOKEN_INT)printf("TOKEN_INT, value: %ld\n",token->int_value);    
     else if(token->type == TOKEN_FLOAT)printf("TOKEN_FLOAT, value: %lf\n",token->float_value);    
-    else if(token->type == TOKEN_EOF)printf("TOKEN_EOF\n");   
+    else if(token->type == TOKEN_EOF)printf("TOKEN_EOF\n");
+    else if(token->type == TOKEN_EOF_FAIL)printf("TOKEN_EOF_FAIL\n");
 
 
     else if(token->type == TOKEN_BLANK0)printf("TOKEN_BLANK0\n");    

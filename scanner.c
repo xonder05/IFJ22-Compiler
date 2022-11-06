@@ -17,6 +17,10 @@ token_t get_token(int token_num)
     if(token_num == 1){
         return deal_with_prolog();
     }
+    if(token_num == -1){
+        return deal_with_end();
+    }
+
 
 
     // has to be freed with dyn_string_free(string)
@@ -53,7 +57,7 @@ token_t get_token(int token_num)
                 }
 
                 else if(c == '/'){
-                    state = STATE_COMMENT;
+                    state = STATE_COMMENT; // or divide
                     break;
                 }
 
@@ -263,8 +267,9 @@ token_t get_token(int token_num)
                     state = STATE_BLOCK_COM;
                 }
                 else{
-                    state = STATE_BLANK0;
-                    ungetc(c,stdin);
+                    token.type = TOKEN_DIVIDE;
+                    dyn_string_free(string);
+                    return token;
                 }
                 break;
             
@@ -302,6 +307,26 @@ token_t get_token(int token_num)
                     ungetc(c,stdin);
                     state = STATE_BLANK0;
                 }
+                else if(c == 92){ // 92 == '\'
+                    state = STATE_STRING_ESCAPE;
+                }
+                // white space or sharp
+                // convert to escpae sequence \xzy
+                else if(c <= 32 || c == 35)
+                {
+                    char tmp[3];
+                    sprintf(tmp,"%d",(int)c);
+                    if (tmp[1] == '\0')
+                    {
+                        tmp[1] = tmp[0];
+                        tmp[0] = '0';
+                        tmp[2] = '\0';
+                    }
+                    dyn_string_add_char(string,92);
+                    dyn_string_add_char(string,'0');
+                    dyn_string_add_string(string,tmp);                    
+
+                }
                 else if(c == '"'){
                     token.type = TOKEN_STRING;
                     token.string = string;
@@ -310,6 +335,169 @@ token_t get_token(int token_num)
                 else{
                     dyn_string_add_char(string,c);
                 }
+                break;
+            
+            case STATE_STRING_ESCAPE:
+                if(c == EOF)
+                {
+                    ungetc(c,stdin);
+                    state = STATE_BLANK0;
+                    break;
+                }
+                // \$ \" just add signs to string
+                if (c == '"' || c == '$')
+                {
+                    state = STATE_STRING_READ;
+                    dyn_string_add_char(string,c);
+                    break;
+                }
+                // backslash
+                if ( c == 92)
+                {
+                    state = STATE_STRING_READ;
+                    dyn_string_add_char(string,92);
+                    dyn_string_add_string(string,"\092");
+                    break;                    
+                }
+                // \xhh
+                if ( c == 'x')
+                {
+                    char tmp[3];
+                    tmp[2]='\0';
+                    c = getc(stdin);
+                    if(c == EOF)
+                    {
+                        token.type = STATE_BLANK0;
+                        ungetc(c,stdin);
+                        return token;
+                    }
+                    if(!isxdigit(c))
+                    {
+                        dyn_string_add_char(string,92);
+                        dyn_string_add_string(string,"092x");
+                        ungetc(c,stdin);
+                        state = STATE_STRING_READ;
+                        break;
+                    }
+                    tmp[0] = c;
+                    c = getc(stdin);
+                    if(c == EOF)
+                    {
+                        token.type = STATE_BLANK0;
+                        ungetc(c,stdin);
+                        return token;
+                    }
+                    if(!isxdigit(c))
+                    {
+                        dyn_string_add_char(string,92);
+                        dyn_string_add_string(string,"092x");
+                        ungetc(tmp[0],stdin);
+                        ungetc(c,stdin);
+                        state = STATE_STRING_READ;
+                        break;
+                    }
+                    tmp[1] = c;
+                    char new = hex_to_dec(tmp);
+                    // target language specific
+                    if (new == 92)
+                    {
+                        dyn_string_add_char(string,92);
+                        dyn_string_add_string(string,"092");
+                    }
+                    else if (new == '#')
+                    {
+                        dyn_string_add_char(string,92);
+                        dyn_string_add_string(string,"035");
+                    }
+                    // source language specific
+                    else if (new == '"')
+                    {
+                        dyn_string_add_char(string,'"');
+                    }
+                    else if (new == '$')
+                    {
+                        dyn_string_add_char(string,'$');
+                    }
+                    else{
+                        ungetc(new,stdin);
+                    }
+                    state = STATE_STRING_READ;
+                    break;
+                }
+                if (c <= '7' && c >= '0')
+                {
+                    char tmp[4];
+                    tmp[3] = '\0';
+                    tmp[0] = c;
+                    c = getc(stdin);
+                    if(c == EOF)
+                    {
+                        token.type = STATE_BLANK0;
+                        ungetc(c,stdin);
+                        return token;
+                    }
+                    if(c > '7' || c < '0')
+                    {
+                        dyn_string_add_char(string,92);
+                        dyn_string_add_string(string,"092");
+                        ungetc(c,stdin);
+                        ungetc(tmp[0],stdin);
+                        state = STATE_STRING_READ;
+                        break;
+                    }
+                    tmp[1] = c;
+                    c = getc(stdin);
+                    if(c == EOF)
+                    {
+                        token.type = STATE_BLANK0;
+                        ungetc(c,stdin);
+                        return token;
+                    }
+                    if(c > '7' || c < '0')
+                    {
+                        dyn_string_add_char(string,92);
+                        dyn_string_add_string(string,"092");
+                        ungetc(c,stdin);
+                        ungetc(tmp[1],stdin);
+                        ungetc(tmp[0],stdin);
+                        state = STATE_STRING_READ;
+                        break;
+                    }
+                    tmp[2] = c;
+                    char new = oct_to_dec(tmp);
+                    // target language specific
+                    if (new == 92)
+                    {
+                        dyn_string_add_char(string,92);
+                        dyn_string_add_string(string,"092");
+                    }
+                    else if (new == '#')
+                    {
+                        dyn_string_add_char(string,92);
+                        dyn_string_add_string(string,"035");
+                    }
+                    // source language specific
+                    else if (new == '"')
+                    {
+                        dyn_string_add_char(string,'"');
+                    }
+                    else if (new == '$')
+                    {
+                        dyn_string_add_char(string,'$');
+                    }
+                    else{
+                        ungetc(new,stdin);
+                    }
+                    state = STATE_STRING_READ;
+                    break;
+                }
+                // else
+                dyn_string_add_char(string,92);
+                dyn_string_add_string(string,"092");
+                ungetc(c,stdin);
+                state = STATE_STRING_READ;
+
+
                 break;
             
             case STATE_NOT_EQUAL1:
@@ -385,6 +573,7 @@ token_t get_token(int token_num)
                 }
                 else{
                     token.type = TOKEN_BIGGER;
+                    ungetc(c,stdin);
                     dyn_string_free(string);
                     return token;
                 }
@@ -494,7 +683,6 @@ token_t deal_with_prolog()
         return token;
     }
     free_token(token);
-
     // '('
     token = get_token(5);
     if(token.type != TOKEN_L_PAR)
@@ -586,4 +774,26 @@ void free_token(token_t token){
         dyn_string_free(token.string);
     }
     return;
+}
+
+token_t deal_with_end(){
+    int c;
+    token_t token;
+    token.type = TOKEN_EOF_FAIL;
+    c = getc(stdin);
+    if(c == EOF){
+        token.type = TOKEN_EOF;
+        return token;
+    }
+    if(c == '\n')
+    {
+
+        c = getc(stdin);
+        if(c == EOF)
+        {
+            token.type = TOKEN_EOF;
+            return token;
+        }
+    }
+    return token;
 }

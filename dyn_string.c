@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define STR_LEN_INC 10
 
@@ -60,7 +61,7 @@ bool dyn_string_add_char(Dyn_String *dyn_str, char c)
 bool dyn_string_add_string(Dyn_String *dyn_str, char *c)
 {
     int string_length = strlen(c);
-    if (dyn_str->size + string_length >= dyn_str->alloc_size)
+    if (dyn_str->size + string_length + 1>= dyn_str->alloc_size)
     {   
         unsigned new_size = dyn_str->alloc_size + string_length;
         dyn_str->string = (char*) realloc(dyn_str->string,new_size);
@@ -72,9 +73,62 @@ bool dyn_string_add_string(Dyn_String *dyn_str, char *c)
     }
 
     strcat(dyn_str->string,c);
-    dyn_str->size = strlen(dyn_str->string) + 1;
+    dyn_str->size = strlen(dyn_str->string);
     return true;
 }
 
+int hex_to_dec(char hex[3])
+{
+    int decimal = 0;
+    int base = 1;
+    for(int i =1; i >= 0; i--)
+    {
+        if(hex[i] >= '0' && hex[i] <= '9')
+        {
+            decimal += (hex[i] - 48) * base;
+            base *= 16;
+        }
+        else if(hex[i] >= 'A' && hex[i] <= 'F')
+        {
+            decimal += (hex[i] - 55) * base;
+            base *= 16;
+        }
+        else if(hex[i] >= 'a' && hex[i] <= 'f')
+        {
+            decimal += (hex[i] - 87) * base;
+            base *= 16;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    return decimal;
 
+}
+
+int oct_to_dec(char hex[4])
+{
+    int decimal = 0,octal,remain,i=0;
+    octal = atoi(hex);
+    while(octal != 0)
+    {
+        remain = octal % 10;
+        decimal = decimal + (remain * pow_int(8,i++));
+        octal = octal/10;
+    }
+    return decimal;
+}
+
+int pow_int (int base, int exp)  
+{  
+    int power = 1, i; 
+    for (i = 1; i <= exp; ++i)  
+    {  
+        power = power * base;  
+          
+    }  
+    return power;
+} 
 
