@@ -1,10 +1,10 @@
-CC = gcc
-CFLAGS = -std=c11 -Wall -Wextra -pedantic -g
+CC=gcc
+CFLAGS=-std=c99 -Wall -Wextra -pedantic -lm -fcommon
 
 all: prekladac
 
-prekladac: main.o scanner.o dyn_string.o testing_utils.o
-	$(CC) $(CFLAGS) main.o scanner.o dyn_string.o testing_utils.o -o prekladac
+prekladac: main.o parser.o scanner.o dyn_string.o testing_utils.o
+	$(CC) $(CFLAGS) main.o parser.o scanner.o dyn_string.o testing_utils.o -o prekladac
 
 
 main.o: main.c
@@ -19,9 +19,11 @@ dyn_string.o: dyn_string.c
 testing_utils.o: testing_utils.c
 	$(CC) $(CFLAGS) -c testing_utils.c -o testing_utils.o
 
+parser.o: parser.c
+	$(CC) $(CFLAGS) -c parser.c -o parser.o
+
 run: prekladac
 	./prekladac
-
 
 clean:
 	-rm -f *.o main

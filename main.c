@@ -1,3 +1,5 @@
+#include "parser.h"
+
 #include<stdio.h>
 
 int main ()
@@ -5,8 +7,9 @@ int main ()
 
     printf("test\n");
 
+    parse();
 
-
+    printf("test\n");
 
     return 0;
 }

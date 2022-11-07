@@ -11,22 +11,25 @@ typedef enum
 {
 	KEYWORD_ELSE,
 	KEYWORD_FLOAT,
+	KEYWORD_Q_FLOAT,
 	KEYWORD_FUNCTION,
 	KEYWORD_IF,
 	KEYWORD_INT,
+	KEYWORD_Q_INT,
 	KEYWORD_NULL,
 	KEYWORD_RETURN,
 	KEYWORD_STRING,
+	KEYWORD_Q_STRING,
 	KEYWORD_VOID,
 	KEYWORD_WHILE,
 } Keyword;
+
 
 
 typedef enum
 {
     
     TOKEN_VAR_ID,       // $smthing
-    TOKEN_QUEST_MARK,   // ?
     TOKEN_END_TAG,      // ?>
     TOKEN_SEMICOLON,    // ;
     TOKEN_COLON,        // :
@@ -47,12 +50,14 @@ typedef enum
     TOKEN_PLUS,         // +
     TOKEN_MINUS,        // -
     TOKEN_MULTIPLY,     // *
+    TOKEN_DIVIDE,       // /
     TOKEN_STRING,       // "xxxx"
     TOKEN_FUNC_ID,      // id()  (NENI V AUTOMATU)
     TOKEN_KEYWORD,      // if,...   (NENI V AUTOMATU)
     TOKEN_INT,          // INT
     TOKEN_FLOAT,        // FLOAT
     TOKEN_EOF,          // EOF
+    TOKEN_EOF_FAIL,    
 
     TOKEN_BLANK0,       // errors
     TOKEN_BLANK1,
@@ -61,6 +66,10 @@ typedef enum
 
     TOKEN_PROLOG,   // declare(strict_types=1);
     TOKEN_PROLOG_FAIL,  // anything else
+
+    STATE_START_PROLOG,
+    STATE_SMALL_PROLOG,
+    STATE_START_TAG_PHP_PROLOG
 
 }Token_type;
 
@@ -76,6 +85,7 @@ typedef enum
     STATE_NOT_EQUAL1,   // ! non finishing
     STATE_NOT_EQUAL2,   // != non 
     STATE_STRING_READ,  // "x" non finishing
+    STATE_STRING_ESCAPE,  // "x\.." non finishing, not in fsm
     STATE_ID,            // keyword or function id  (NENI V AUTOMATU)
     STATE_INT,          // INT
     STATE_FLOAT,        // FLOAT
@@ -94,13 +104,12 @@ typedef enum
 // TOKEN struct
 typedef struct token{
     Token_type type; // enum
-    union {
         long int int_value;
         double float_value;
         Dyn_String *string;
         Keyword keyword;
-    };
 } token_t;
+
 
 // return next token (struct, so NO POINTER) 
 // if token contain *string value, string has to be fried with dyn_string_free(token.string)
@@ -110,6 +119,11 @@ token_t get_token(int token_num);
 // deals with the "declare(static_type=1);"
 // returns either TOKEN_PROLOG or TOKEN_PROLOG_FAIL
 token_t deal_with_prolog();
+
+// called after ?>
+// returns either TOKEN_EOF or TOKEN_EOF_FAIL
+// after ?> cant be anything else than EOF or \nEOF
+token_t deal_with_end();
 
 
 // free dynamic string strored inside of token_t struct
