@@ -758,7 +758,6 @@ token_t deal_with_prolog()
         return token;
     }
     free_token(token);
-
     // '('
     token = get_token(0);
     if(token.type != TOKEN_L_PAR)
