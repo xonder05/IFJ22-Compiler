@@ -4,23 +4,23 @@
 #include <string.h>
 
 
+token_t deal_with_prolog();
+
 token_t get_token(int token_num)
 {
     int c; // store char
-    static bool deal_with_start = true;
     token_t token;
     State_t state = STATE_START;
 
     
     // dealing with prolog: declare(...) separatly outside from fsm
-    if(deal_with_start == true)
-    {
-        deal_with_start = false;
+    if(token_num == 1){
         return deal_with_prolog();
     }
     if(token_num == -1){
         return deal_with_end();
     }
+
 
 
     // has to be freed with dyn_string_free(string)
@@ -372,7 +372,7 @@ token_t get_token(int token_num)
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = TOKEN_BLANK0;
+                        token.type = STATE_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -388,7 +388,7 @@ token_t get_token(int token_num)
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = TOKEN_BLANK0;
+                        token.type = STATE_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -437,7 +437,7 @@ token_t get_token(int token_num)
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = TOKEN_BLANK0;
+                        token.type = STATE_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -454,7 +454,7 @@ token_t get_token(int token_num)
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = TOKEN_BLANK0;
+                        token.type = STATE_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -493,6 +493,20 @@ token_t get_token(int token_num)
                     else{
                         ungetc(new,stdin);
                     }
+                    state = STATE_STRING_READ;
+                    break;
+                }
+                else if (c == 'n')
+                {
+                    dyn_string_add_char(string,92);
+                    dyn_string_add_string(string,"010");//LF
+                    state = STATE_STRING_READ;
+                    break;
+                }
+                else if (c == 't')
+                {
+                    dyn_string_add_char(string,92);
+                    dyn_string_add_string(string,"009");//LF
                     state = STATE_STRING_READ;
                     break;
                 }
@@ -562,7 +576,7 @@ token_t get_token(int token_num)
                     return token;
                 }
                 else{
-                    token.type = TOKEN_SMALLER;
+                    token.type = TOKEN_EQUAL;
                     ungetc(c,stdin);
                     dyn_string_free(string);
                     return token;
@@ -572,7 +586,7 @@ token_t get_token(int token_num)
             case STATE_BIGGER:
                 if(c == '='){
                     token.type = TOKEN_BIGGER_EQ;
-                    //ungetc(c,stdin);
+                    ungetc(c,stdin);
                     dyn_string_free(string);
                     return token;
                 }
@@ -685,47 +699,12 @@ token_t get_token(int token_num)
 // i use free_token() on every token, in case some had dyn_string in it
 token_t deal_with_prolog()
 {
-    token_t token;
-    token = get_token(0);
-
-    if(token.type != TOKEN_START_TAG)
-    {
-        token.type = TOKEN_PROLOG_FAIL;
-        return token;
-    }
-
-    //check php
     int c;
-    for (int index = 0; index < 3; index++)
-    {
-        c = getc(stdin);
-        switch (c)
-        {
-        case 'p':
-            if (index == 1)
-            {
-                token.type = TOKEN_PROLOG_FAIL;
-                return token;
-            }
-            break;
-        case 'h':
-            if (index == 0 || index == 2)
-            {
-                token.type = TOKEN_PROLOG_FAIL;
-                return token;
-            }
-            break;
-        default:
-            token.type = TOKEN_PROLOG_FAIL;
-            return token;
-            break;
-        }
-    }
-
-    token.type = STATE_START_TAG_PHP_PROLOG;
-
-    // after start tag "<?php" white space have to follow
+    token_t token;
+    token.type = TOKEN_PROLOG_FAIL;
     c = getc(stdin);
+
+    // after start tag "<?" white space have to follow
     if(!isspace(c))
     {
         free_token(token);
@@ -740,7 +719,7 @@ token_t deal_with_prolog()
     // otherwise return token leading to lexical error
 
     // "declare"
-    token = get_token(0);
+    token = get_token(5);
     if ( token.type == TOKEN_FUNC_ID)
     {
         if(!strcmp((const char*) token.string->string,"declare"));
@@ -759,7 +738,7 @@ token_t deal_with_prolog()
     }
     free_token(token);
     // '('
-    token = get_token(0);
+    token = get_token(5);
     if(token.type != TOKEN_L_PAR)
     {
         free_token(token);
@@ -768,7 +747,7 @@ token_t deal_with_prolog()
     }
 
     // strict_types
-    token = get_token(0);
+    token = get_token(5);
     if ( token.type == TOKEN_FUNC_ID)
     {
         if(!strcmp((const char*) token.string->string,"strict_types"));
@@ -789,7 +768,7 @@ token_t deal_with_prolog()
     
 
     // '='
-    token = get_token(0);
+    token = get_token(5);
     if(token.type != TOKEN_EQUAL)
     {
         free_token(token);
@@ -798,7 +777,7 @@ token_t deal_with_prolog()
     }
 
     // 1
-    token = get_token(0);
+    token = get_token(5);
     if ( token.type == TOKEN_INT)
     {
         if(token.int_value == 1);
@@ -818,7 +797,7 @@ token_t deal_with_prolog()
 
 
     // ')'
-    token = get_token(0);
+    token = get_token(5);
     if(token.type != TOKEN_R_PAR)
     {
         free_token(token);
@@ -827,7 +806,7 @@ token_t deal_with_prolog()
     }    
 
     // ')'
-    token = get_token(0);
+    token = get_token(5);
     if(token.type != TOKEN_SEMICOLON)
     {
         free_token(token);
