@@ -372,7 +372,7 @@ token_t get_token(int token_num)
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = STATE_BLANK0;
+                        token.type = TOKEN_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -388,7 +388,7 @@ token_t get_token(int token_num)
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = STATE_BLANK0;
+                        token.type = TOKEN_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -437,7 +437,7 @@ token_t get_token(int token_num)
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = STATE_BLANK0;
+                        token.type = TOKEN_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -454,7 +454,7 @@ token_t get_token(int token_num)
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = STATE_BLANK0;
+                        token.type = TOKEN_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -562,7 +562,7 @@ token_t get_token(int token_num)
                     return token;
                 }
                 else{
-                    token.type = TOKEN_EQUAL;
+                    token.type = TOKEN_SMALLER;
                     ungetc(c,stdin);
                     dyn_string_free(string);
                     return token;
@@ -572,7 +572,7 @@ token_t get_token(int token_num)
             case STATE_BIGGER:
                 if(c == '='){
                     token.type = TOKEN_BIGGER_EQ;
-                    ungetc(c,stdin);
+                    //ungetc(c,stdin);
                     dyn_string_free(string);
                     return token;
                 }

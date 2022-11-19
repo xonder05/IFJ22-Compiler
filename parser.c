@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "scanner.h"
+#include "expressions.h"
 
 token_t scanner_result;
 bool scanner_result_is_processed = true;
@@ -36,7 +37,7 @@ int data_type();
 int func_type();
 
 //Expresion
-int expresion();
+//int expresion();
 
 
 
@@ -327,7 +328,7 @@ int command_variable()
     {
         return FIAL_IN_MIDDLE;
     }
-     
+    scanner_result_is_processed = true;
     //TOKEN_SEMICOLON
     get_unprocessed_token();
     if (scanner_result.type != TOKEN_SEMICOLON)
@@ -349,7 +350,6 @@ int command_if()
     {
         return FAIL_IN_BEGIN;
     }
-    scanner_result_is_processed = true;
 
     if(scanner_result.keyword != KEYWORD_IF)
     {
@@ -366,17 +366,10 @@ int command_if()
     scanner_result_is_processed = true;
     
     //EXPRESSION
-    if (expresion() != SUCCESS)
+    if (expresion(scanner_result) != SUCCESS)
     {
         return FIAL_IN_MIDDLE;
     }
-    //TOKEN_R_PAR
-    get_unprocessed_token();
-    if(scanner_result.type != TOKEN_R_PAR)
-    {
-        return FIAL_IN_MIDDLE;
-    }
-    scanner_result_is_processed = true;
 
     //TOKEN_L_BRAC
     get_unprocessed_token();
@@ -461,20 +454,11 @@ int command_while()
         return FIAL_IN_MIDDLE;
     }
     scanner_result_is_processed = true; 
-    
     //  EXPRESSION 
-    if (expresion() != SUCCESS)
+    if (expresion(scanner_result) != SUCCESS)
     {
         return FIAL_IN_MIDDLE;
     }
-
-    //  TOKEN_R_PAR
-    get_unprocessed_token();
-    if(scanner_result.type != TOKEN_R_PAR)
-    {
-        return FIAL_IN_MIDDLE;
-    }
-    scanner_result_is_processed = true; 
 
     //  TOKEN_L_BRAC
     get_unprocessed_token();
@@ -541,7 +525,7 @@ int command_return()
     scanner_result_is_processed = true; 
 
     //  EXPRESSION
-    if (expresion() != SUCCESS)
+    if (expresion(scanner_result) != SUCCESS)
     {
         return FIAL_IN_MIDDLE;
     }
@@ -562,7 +546,7 @@ int call_function_or_expresion()
     printf("call_or_exp\n");
     if(call_function() != SUCCESS)
     {
-        return expresion();
+        return expresion(scanner_result);
     }
     return SUCCESS;
 }
@@ -842,8 +826,10 @@ int func_type()
     return SUCCESS;
 }
 
+/*
 int expresion()
 {
     printf("expresion\n");
     return SUCCESS;
 }
+*/

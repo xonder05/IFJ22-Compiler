@@ -3,8 +3,8 @@ CFLAGS=-std=c99 -Wall -Wextra -pedantic -lm -fcommon
 
 all: prekladac
 
-prekladac: main.o parser.o scanner.o dyn_string.o testing_utils.o
-	$(CC) $(CFLAGS) main.o parser.o scanner.o dyn_string.o testing_utils.o -o prekladac
+prekladac: main.o parser.o scanner.o dyn_string.o testing_utils.o stack.o expressions.o
+	$(CC) $(CFLAGS) main.o parser.o scanner.o dyn_string.o testing_utils.o stack.o expressions.o -o prekladac
 
 
 main.o: main.c
@@ -21,6 +21,12 @@ testing_utils.o: testing_utils.c
 
 parser.o: parser.c
 	$(CC) $(CFLAGS) -c parser.c -o parser.o
+
+stack.o: stack.c
+	$(CC) $(CFLAGS) -c stack.c -o stack.o
+
+expressions.o: expressions.c
+	$(CC) $(CFLAGS) -c expressions.c -o expressions.o
 
 run: prekladac
 	./prekladac
