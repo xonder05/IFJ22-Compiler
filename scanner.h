@@ -59,6 +59,8 @@ typedef enum
     TOKEN_EOF,          // EOF
     TOKEN_EOF_FAIL,    
 
+    TOKEN_END,
+
     TOKEN_BLANK0,       // errors
     TOKEN_BLANK1,
     TOKEN_BLANK2,
@@ -114,7 +116,7 @@ typedef struct token{
 // return next token (struct, so NO POINTER) 
 // if token contain *string value, string has to be fried with dyn_string_free(token.string)
 // number of token (starting from 0), just for proper scanning of prolog
-token_t get_token(int token_num);
+token_t get_token();
 
 // deals with the "declare(static_type=1);"
 // returns either TOKEN_PROLOG or TOKEN_PROLOG_FAIL
@@ -123,7 +125,7 @@ token_t deal_with_prolog();
 // called after ?>
 // returns either TOKEN_EOF or TOKEN_EOF_FAIL
 // after ?> cant be anything else than EOF or \nEOF
-token_t deal_with_end();
+bool deal_with_end();
 
 
 // free dynamic string strored inside of token_t struct
