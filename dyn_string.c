@@ -39,24 +39,6 @@ void dyn_string_free(Dyn_String *dyn_str)
     free(dyn_str);
 }
 
-bool dyn_string_equal(Dyn_String* String1, Dyn_String* String2)
-{
-    if (String1 == NULL && String2 == NULL)
-        return true;
-
-    if(String1 == NULL || String2 == NULL || String1->size != String2 ->size)
-        return false;
-
-    for(unsigned i = 0; i < String1->size; i++)
-    {
-        
-        if(String1->string[i] != String2->string[i])
-            return false;
-    }
-
-    return true;
-}
-
 bool dyn_string_add_char(Dyn_String *dyn_str, char c)
 {
     if (dyn_str->size + 1 >= dyn_str->alloc_size)

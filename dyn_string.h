@@ -28,8 +28,6 @@ bool dyn_string_add_char(Dyn_String *dyn_str, char c);
 // append string c to dynamic string
 bool dyn_string_add_string(Dyn_String *dyn_str, char *c);
 
-bool dyn_string_equal(Dyn_String* String1, Dyn_String* String2);
-
 // takes string with hex value converts it to decimal
 int hex_to_dec(char hex[3]);
 

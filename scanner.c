@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-token_t get_token()
+token_t get_token(int token_num)
 {
     int c; // store char
     token_t token;
@@ -14,6 +14,9 @@ token_t get_token()
     // dealing with prolog: declare(...) separatly outside from fsm
     if(token_num == 1){
         return deal_with_prolog();
+    }
+    if(token_num == -1){
+        return deal_with_end();
     }
 
 
@@ -491,20 +494,6 @@ token_t get_token()
                     state = STATE_STRING_READ;
                     break;
                 }
-                else if (c == 'n')
-                {
-                    dyn_string_add_char(string,92);
-                    dyn_string_add_string(string,"010");//LF
-                    state = STATE_STRING_READ;
-                    break;
-                }
-                else if (c == 't')
-                {
-                    dyn_string_add_char(string,92);
-                    dyn_string_add_string(string,"009");//LF
-                    state = STATE_STRING_READ;
-                    break;
-                }
                 // else
                 dyn_string_add_char(string,92);
                 dyn_string_add_string(string,"092");
@@ -597,8 +586,6 @@ token_t get_token()
                 if(c == '>'){
                     token.type = TOKEN_END_TAG;
                     dyn_string_free(string);
-                    if (deal_with_end() == true)
-                        token.type = TOKEN_END;
                     return token;
                 }
                 else if(c == 'i' || c == 'f' || c == 's')
@@ -817,6 +804,8 @@ token_t deal_with_prolog()
 
 }
 
+
+
 void free_token(token_t token){
     if(token.type == TOKEN_STRING || token.type == TOKEN_VAR_ID || token.type == TOKEN_FUNC_ID)
     {
@@ -825,13 +814,24 @@ void free_token(token_t token){
     return;
 }
 
-bool deal_with_end(){
-    int c = getc(stdin);
+token_t deal_with_end(){
+    int c;
+    token_t token;
+    token.type = TOKEN_EOF_FAIL;
+    c = getc(stdin);
     if(c == EOF){
-        return true;
+        token.type = TOKEN_EOF;
+        return token;
     }
-    else
+    if(c == '\n')
     {
-        return false;
+
+        c = getc(stdin);
+        if(c == EOF)
+        {
+            token.type = TOKEN_EOF;
+            return token;
+        }
     }
+    return token;
 }
