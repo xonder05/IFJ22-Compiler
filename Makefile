@@ -1,10 +1,10 @@
 CC = gcc
-CFLAGS = -std=c11 -Wall -Wextra -pedantic -g
+CFLAGS=-std=c99 -Wall -Wextra -pedantic -lm -fcommon
 
 all: prekladac
 
-prekladac: main.o scanner.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o
-	$(CC) $(CFLAGS) main.o scanner.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o -o prekladac
+prekladac: main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o 
+	$(CC) $(CFLAGS) main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o  -o prekladac
 
 
 main.o: main.c
@@ -27,6 +27,15 @@ code_gen.o: code_gen.c
 
 abstact_syntax_tree.o: abstact_syntax_tree.c
 	$(CC) $(CFLAGS) -c abstact_syntax_tree.c -o abstact_syntax_tree.o
+
+parser.o: parser.c
+	$(CC) $(CFLAGS) -c parser.c -o parser.o
+
+stack.o: stack.c
+	$(CC) $(CFLAGS) -c stack.c -o stack.o
+
+expressions.o: expressions.c
+	$(CC) $(CFLAGS) -c expressions.c -o expressions.o
 
 symtable.o: symtable.c
 	$(CC) $(CFLAGS) -c symtable.c -o symtable.o

@@ -4,21 +4,19 @@
 #include <string.h>
 
 
-token_t deal_with_prolog();
 
-token_t get_token(int token_num)
+token_t get_token()
 {
     int c; // store char
+    static bool deal_with_start = true;
     token_t token;
     State_t state = STATE_START;
-
     
     // dealing with prolog: declare(...) separatly outside from fsm
-    if(token_num == 1){
+    if(deal_with_start == true)
+    {
+        deal_with_start = false;
         return deal_with_prolog();
-    }
-    if(token_num == -1){
-        return deal_with_end();
     }
 
 
@@ -602,6 +600,8 @@ token_t get_token(int token_num)
                 if(c == '>'){
                     token.type = TOKEN_END_TAG;
                     dyn_string_free(string);
+                    if (deal_with_end() == true)
+                        token.type = TOKEN_END;
                     return token;
                 }
                 else if(c == 'i' || c == 'f' || c == 's')
@@ -701,7 +701,41 @@ token_t deal_with_prolog()
 {
     int c;
     token_t token;
-    token.type = TOKEN_PROLOG_FAIL;
+    token = get_token(0);
+
+    if(token.type != TOKEN_START_TAG)
+    {
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;
+    }
+
+    //check php
+    for (int index = 0; index < 3; index++)
+    {
+        c = getc(stdin);
+        switch (c)
+        {
+        case 'p':
+            if (index == 1)
+            {
+                token.type = TOKEN_PROLOG_FAIL;
+                return token;
+            }
+            break;
+        case 'h':
+            if (index == 0 || index == 2)
+            {
+                token.type = TOKEN_PROLOG_FAIL;
+                return token;
+            }
+            break;
+        default:
+            token.type = TOKEN_PROLOG_FAIL;
+            return token;
+            break;
+        }
+    }
+
     c = getc(stdin);
 
     // after start tag "<?" white space have to follow
@@ -738,7 +772,7 @@ token_t deal_with_prolog()
     }
     free_token(token);
     // '('
-    token = get_token(5);
+    token = get_token(0);
     if(token.type != TOKEN_L_PAR)
     {
         free_token(token);
@@ -747,7 +781,7 @@ token_t deal_with_prolog()
     }
 
     // strict_types
-    token = get_token(5);
+    token = get_token(0);
     if ( token.type == TOKEN_FUNC_ID)
     {
         if(!strcmp((const char*) token.string->string,"strict_types"));
@@ -768,7 +802,7 @@ token_t deal_with_prolog()
     
 
     // '='
-    token = get_token(5);
+    token = get_token(0);
     if(token.type != TOKEN_EQUAL)
     {
         free_token(token);
@@ -777,7 +811,7 @@ token_t deal_with_prolog()
     }
 
     // 1
-    token = get_token(5);
+    token = get_token(0);
     if ( token.type == TOKEN_INT)
     {
         if(token.int_value == 1);
@@ -797,7 +831,7 @@ token_t deal_with_prolog()
 
 
     // ')'
-    token = get_token(5);
+    token = get_token(0);
     if(token.type != TOKEN_R_PAR)
     {
         free_token(token);
@@ -806,7 +840,7 @@ token_t deal_with_prolog()
     }    
 
     // ')'
-    token = get_token(5);
+    token = get_token(0);
     if(token.type != TOKEN_SEMICOLON)
     {
         free_token(token);
@@ -830,24 +864,13 @@ void free_token(token_t token){
     return;
 }
 
-token_t deal_with_end(){
-    int c;
-    token_t token;
-    token.type = TOKEN_EOF_FAIL;
-    c = getc(stdin);
+bool deal_with_end(){
+    int c = getc(stdin);
     if(c == EOF){
-        token.type = TOKEN_EOF;
-        return token;
+        return true;
     }
-    if(c == '\n')
+    else
     {
-
-        c = getc(stdin);
-        if(c == EOF)
-        {
-            token.type = TOKEN_EOF;
-            return token;
-        }
+        return false;
     }
-    return token;
 }

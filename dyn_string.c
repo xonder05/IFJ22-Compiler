@@ -62,8 +62,8 @@ bool dyn_string_add_char(Dyn_String *dyn_str, char c)
     if (dyn_str->size + 1 >= dyn_str->alloc_size)
     {   
         unsigned new_size = dyn_str->alloc_size + STR_LEN_INC;
-        dyn_str->string = (char*)realloc(dyn_str->string,new_size);
-        if(dyn_str==NULL)
+        dyn_str->string = (char*) realloc(dyn_str->string,new_size);
+        if(dyn_str->string==NULL)
         {
             return false;
         }
@@ -82,8 +82,8 @@ bool dyn_string_add_string(Dyn_String *dyn_str, char *c)
     if (dyn_str->size + string_length + 1>= dyn_str->alloc_size)
     {   
         unsigned new_size = dyn_str->alloc_size + string_length;
-        dyn_str->string = (char*)realloc(dyn_str->string,new_size);
-        if(dyn_str==NULL)
+        dyn_str->string = (char*) realloc(dyn_str->string,new_size);
+        if(dyn_str->string==NULL)
         {
             return false;
         }
@@ -95,10 +95,6 @@ bool dyn_string_add_string(Dyn_String *dyn_str, char *c)
     return true;
 }
 
-// void dyn_string_dup(Dyn_String *source, Dyn_String *destination)
-// {
-
-// }
 
 int hex_to_dec(char hex[3])
 {

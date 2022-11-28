@@ -58,6 +58,8 @@ typedef enum
     TOKEN_EOF,          // EOF
     TOKEN_EOF_FAIL,    
 
+    TOKEN_END,
+
     TOKEN_BLANK0,       // errors
     TOKEN_BLANK1,
     TOKEN_BLANK2,
@@ -66,6 +68,10 @@ typedef enum
     TOKEN_PROLOG,   // declare(strict_types=1);
     TOKEN_PROLOG_FAIL,  // anything else
 
+    STATE_START_PROLOG,
+    STATE_SMALL_PROLOG,
+    STATE_START_TAG_PHP_PROLOG,
+    
 }Token_type;
 
 typedef enum
@@ -99,18 +105,16 @@ typedef enum
 // TOKEN struct
 typedef struct token{
     Token_type type; // enum
-    union {
         long int int_value;
         double float_value;
         Dyn_String *string;
         Keyword keyword;
-    };
 } token_t;
 
 // return next token (struct, so NO POINTER) 
 // if token contain *string value, string has to be fried with dyn_string_free(token.string)
 // number of token (starting from 0), just for proper scanning of prolog
-token_t get_token(int token_num);
+token_t get_token();
 
 // deals with the "declare(static_type=1);"
 // returns either TOKEN_PROLOG or TOKEN_PROLOG_FAIL
@@ -119,7 +123,7 @@ token_t deal_with_prolog();
 // called after ?>
 // returns either TOKEN_EOF or TOKEN_EOF_FAIL
 // after ?> cant be anything else than EOF or \nEOF
-token_t deal_with_end();
+bool deal_with_end();
 
 
 // free dynamic string strored inside of token_t struct
