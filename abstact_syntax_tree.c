@@ -66,7 +66,7 @@ ast_t* createWhileNode(ast_t *expression, ast_t *while_block)
     return strom;
 }
 
-ast_t* createExpressionNode(operator operator, exp_subtree *left, exp_subtree *right)
+ast_t* createExpressionNode(operator operator, exp_subtree_t *left, exp_subtree_t *right)
 {
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
     if (strom == NULL) { fprintf(stderr, "mallock fail\n"); return NULL;}
@@ -125,7 +125,7 @@ ast_t* printTree(ast_t *tree)
         if (tree->thiscommand.expression.left->type == exp)
         {
             printf("L - ");
-            printTree(tree->thiscommand.expression.left->data.expression);
+            printTree(tree->thiscommand.expression.left->data.exp);
         }
         else if (tree->thiscommand.expression.left->type == op)
         {
@@ -134,7 +134,7 @@ ast_t* printTree(ast_t *tree)
         if (tree->thiscommand.expression.right->type == exp)
         {
             printf("R - ");
-            printTree(tree->thiscommand.expression.right->data.expression);
+            printTree(tree->thiscommand.expression.right->data.exp);
         }
         else if (tree->thiscommand.expression.right->type == op)
         {
@@ -234,11 +234,67 @@ void disposeTree(ast_t* tree)
         {
             disposeTree(tree->nextcommand);
         }
+        free(tree);
         break;
 
     case expression:
+        if(tree->thiscommand.expression.left != NULL)
+        {
+            free(tree->thiscommand.expression.left);
+        }
+        if(tree->thiscommand.expression.right != NULL)
+        {
+            free(tree->thiscommand.expression.right);
+        }
+        if (tree->nextcommand != NULL)
+        {
+            disposeTree(tree->nextcommand);
+        }
+        free(tree);
         break;
     default:
         break;
     }
+}
+
+
+exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, int* imm_int, float* imm_float, Dyn_String* imm_string)
+{
+    exp_subtree_t *tree = malloc(sizeof(exp_subtree_t));
+    if (tree == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
+    
+    if (symbol != NULL && subtree == NULL && imm_int == NULL && imm_float == NULL && imm_string == NULL)
+    {
+        tree->type = op;
+        tree->data.op = symbol;
+    }
+    else if (symbol == NULL && subtree != NULL && imm_int == NULL && imm_float == NULL && imm_string == NULL)
+    {
+        tree->type = exp;
+        tree->data.exp = subtree;
+    }
+    else if (symbol == NULL && subtree == NULL && imm_int != NULL && imm_float == NULL && imm_string == NULL)
+    {
+        tree->type = imm;
+        tree->data.imm.type = type_int;
+        tree->data.imm.data.type_int = *imm_int;
+    }
+    else if (symbol == NULL && subtree == NULL && imm_int == NULL && imm_float != NULL && imm_string == NULL)
+    {
+        tree->type = imm;
+        tree->data.imm.type = type_float;
+        tree->data.imm.data.type_float = *imm_float;
+    }
+    else if (symbol == NULL && subtree == NULL && imm_int == NULL && imm_float == NULL && imm_string != NULL)
+    {
+        tree->type = imm;
+        tree->data.imm.type = type_string;
+        tree->data.imm.data.type_string = *imm_string;
+    }
+    else
+    {
+        fprintf(stderr, "spatna kombinace vstupnich parametrů\n");
+        return NULL;
+    }
+    return tree;
 }
