@@ -562,6 +562,7 @@ symbol_t* initSymbol(symbolType_t Type, Dyn_String* Name, Dyn_String* Context)
 		symbol->info.function.arguments.TypesOfArguments = NULL;
 		symbol->info.function.defined = false;
 		symbol->info.function.returnType = ERROR_TYPE;
+		symbol->info.function.haveReturn = false;
     }
     else 
     {

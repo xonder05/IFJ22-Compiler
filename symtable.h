@@ -36,6 +36,7 @@ typedef struct symbolFunctionInfo
     argumentsOfFunction_t arguments;
     bool defined;
     VariableType_t returnType;
+    bool haveReturn;
 } symbolFunctionInfo_t;
 
 typedef struct symbolVariableInfo

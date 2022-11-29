@@ -3,8 +3,8 @@ CFLAGS=-std=c99 -Wall -Wextra -pedantic -lm -fcommon
 
 all: prekladac
 
-prekladac: main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o expressions.o
-	$(CC) $(CFLAGS) main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o expressions.o -o prekladac
+prekladac: main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o expressions.o error.o
+	$(CC) $(CFLAGS) main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o expressions.o error.o -o prekladac
 
 
 main.o: main.c
@@ -40,12 +40,15 @@ expressions.o: expressions.c
 symtable.o: symtable.c
 	$(CC) $(CFLAGS) -c symtable.c -o symtable.o
 
+error.o: error.c
+	$(CC) $(CFLAGS) -c error.c -o error.o
+
 run: prekladac
 	./prekladac
 
 
 clean:
-	-rm -f *.o main
+	-rm -f *.o prekladac main
 
 zip:
 	zip xbahou00.zip *.c *.h Makefile

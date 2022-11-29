@@ -571,18 +571,30 @@ int expresion(token_t scanner_result)
 
 
     printStack(stack);
-    disposeStack(stack);
 
     if (fail == true)
     {
-        fprintf(stderr, "expression fail\n");
         //printf("-----------------------------------------------------------------------------------------------------------------------------------\n");
-        return 0;
+        
+        if (sizeStack(stack) == 1 && stack->top->type == STARTEND)
+        {
+            
+            fprintf(stderr, "expression none\n");
+            disposeStack(stack);
+            return 0;
+        }
+
+        
+        fprintf(stderr, "expression fail\n");
+        disposeStack(stack);
+        return -1;
     }
     else
     {
         printf("expression success\n");
         //printf("-----------------------------------------------------------------------------------------------------------------------------------\n");
+        
+        disposeStack(stack);
         return 1;
     }
 
