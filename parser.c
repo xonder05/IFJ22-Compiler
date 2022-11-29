@@ -79,7 +79,7 @@ int parse()
         exit(-1);
     }
 
-
+    clearSymTable(Table);
 
     return 1;
 }
