@@ -61,6 +61,10 @@ int parse()
     //Prepare 
     symTable_t* Table = initSymTable();
     //insert premade function
+    if (insertPremadeFunction(Table) == false)
+    {
+        exit(-1);
+    }
 
     scanner_result = get_token();
     scanner_result_is_processed = false;
@@ -742,7 +746,7 @@ int call_function(symTable_t* Table, VariableType_t* RetrunType)
 
     if(NewFunc->info.function.defined == true || findSymTable(Table, NewFunc->name, NULL) != NULL)
     {
-        if (NewFunc->info.function.arguments.countOfArguments != FuncArguments.countOfArguments)
+        if (NewFunc->info.function.arguments.countOfArguments != FuncArguments.countOfArguments && NewFunc->info.function.arguments.countOfArguments != -1)
         {
             exit(-1);
         }

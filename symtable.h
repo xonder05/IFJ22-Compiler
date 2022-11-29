@@ -84,6 +84,8 @@ bool insertSymTable(symTable_t* Table, symbol_t* Symbol);
 
 bool isAllFunctionDefined(symTable_t* Table);
 
+bool insertPremadeFunction(symTable_t* Table);
+
 //Symbol
 symbol_t* initSymbol(symbolType_t Type, Dyn_String* Name, Dyn_String* Context);
 
