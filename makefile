@@ -3,8 +3,8 @@ CFLAGS=-std=c99 -Wall -Wextra -pedantic -lm -fcommon
 
 all: prekladac
 
-prekladac: main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o 
-	$(CC) $(CFLAGS) main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o  -o prekladac
+prekladac: main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o expressions.o
+	$(CC) $(CFLAGS) main.o scanner.o parser.o stack.o dyn_string.o testing_utils.o code_gen_build.o code_gen.o symtable.o abstact_syntax_tree.o expressions.o -o prekladac
 
 
 main.o: main.c
