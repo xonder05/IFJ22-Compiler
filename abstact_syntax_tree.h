@@ -20,16 +20,10 @@ typedef union imm_uni {
         float type_float;
         Dyn_String type_string;
 }imm_uni_t;
-
 typedef struct immediate_operand{
     imm_type_t type;
     imm_uni_t data;    
 }imm_t;
-
-
-//todo operations with this
-
-
 typedef struct expression_subtree{
     enum sub_tree_type {op, exp, imm}type;
     union exp_sub_uni{
@@ -38,6 +32,13 @@ typedef struct expression_subtree{
         imm_t imm;
     }data;
 }exp_subtree_t;
+
+
+typedef struct func_parameters{
+    enum {par_op, par_imm, par_null}type;
+    symbol_t *op;
+    imm_t imm;
+}func_par_t;
 
 //node data based on it's type
 union node{
