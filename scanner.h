@@ -25,7 +25,6 @@ typedef enum
 } Keyword;
 
 
-
 typedef enum
 {
     
@@ -71,8 +70,8 @@ typedef enum
 
     STATE_START_PROLOG,
     STATE_SMALL_PROLOG,
-    STATE_START_TAG_PHP_PROLOG
-
+    STATE_START_TAG_PHP_PROLOG,
+    
 }Token_type;
 
 typedef enum
@@ -111,7 +110,6 @@ typedef struct token{
         Dyn_String *string;
         Keyword keyword;
 } token_t;
-
 
 // return next token (struct, so NO POINTER) 
 // if token contain *string value, string has to be fried with dyn_string_free(token.string)

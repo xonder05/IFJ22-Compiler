@@ -4,13 +4,13 @@
 #include <string.h>
 
 
+
 token_t get_token()
 {
     int c; // store char
     static bool deal_with_start = true;
     token_t token;
     State_t state = STATE_START;
-
     
     // dealing with prolog: declare(...) separatly outside from fsm
     if(deal_with_start == true)
@@ -18,6 +18,7 @@ token_t get_token()
         deal_with_start = false;
         return deal_with_prolog();
     }
+
 
 
     // has to be freed with dyn_string_free(string)
@@ -698,6 +699,7 @@ token_t get_token()
 // i use free_token() on every token, in case some had dyn_string in it
 token_t deal_with_prolog()
 {
+    int c;
     token_t token;
     token = get_token(0);
 
@@ -708,7 +710,6 @@ token_t deal_with_prolog()
     }
 
     //check php
-    int c;
     for (int index = 0; index < 3; index++)
     {
         c = getc(stdin);
@@ -735,10 +736,9 @@ token_t deal_with_prolog()
         }
     }
 
-    token.type = STATE_START_TAG_PHP_PROLOG;
-
-    // after start tag "<?php" white space have to follow
     c = getc(stdin);
+
+    // after start tag "<?" white space have to follow
     if(!isspace(c))
     {
         free_token(token);
@@ -753,7 +753,7 @@ token_t deal_with_prolog()
     // otherwise return token leading to lexical error
 
     // "declare"
-    token = get_token(0);
+    token = get_token(5);
     if ( token.type == TOKEN_FUNC_ID)
     {
         if(!strcmp((const char*) token.string->string,"declare"));
@@ -853,6 +853,8 @@ token_t deal_with_prolog()
     return token;
 
 }
+
+
 
 void free_token(token_t token){
     if(token.type == TOKEN_STRING || token.type == TOKEN_VAR_ID || token.type == TOKEN_FUNC_ID)

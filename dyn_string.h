@@ -16,7 +16,7 @@ typedef struct{
 // return ready-to-use structure
 Dyn_String *dyn_string_init();
 
-// delete string stored in struct
+// clear string stored in struct
 void dyn_string_clear(Dyn_String *dyn_str);
 
 // free the struct
@@ -38,3 +38,6 @@ int oct_to_dec(char hex[4]);
 
 // pow() for ints
 int pow_int (int base, int exp);
+
+// converts int to string and appends it to Dyn_string 
+void unsigned_int_to_string(Dyn_String *old,int num);

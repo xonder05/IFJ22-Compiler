@@ -18,13 +18,13 @@ Dyn_String *dyn_string_init()
     dyn_str->string = (char*) malloc(STR_LEN_INC);
     if(dyn_str->string==NULL)
     {
-        free(dyn_str);
         return NULL;
     }
     dyn_str->size = 0;
-    dyn_str->alloc_size = STR_LEN_INC;
+    dyn_str ->alloc_size = STR_LEN_INC;
     dyn_str->string[0] = '\0';
     return dyn_str;
+
 }
 
 void dyn_string_clear(Dyn_String *dyn_str)
@@ -62,7 +62,7 @@ bool dyn_string_add_char(Dyn_String *dyn_str, char c)
     if (dyn_str->size + 1 >= dyn_str->alloc_size)
     {   
         unsigned new_size = dyn_str->alloc_size + STR_LEN_INC;
-        dyn_str->string = (char*) realloc(dyn_str->string, new_size);
+        dyn_str->string = (char*) realloc(dyn_str->string,new_size);
         if(dyn_str->string==NULL)
         {
             return false;
@@ -94,6 +94,7 @@ bool dyn_string_add_string(Dyn_String *dyn_str, char *c)
     dyn_str->size = strlen(dyn_str->string);
     return true;
 }
+
 
 int hex_to_dec(char hex[3])
 {
@@ -150,3 +151,27 @@ int pow_int (int base, int exp)
     return power;
 } 
 
+void unsigned_int_to_string(Dyn_String *old,int num)
+{
+    Dyn_String *string = dyn_string_init();
+
+    if(num < 0)
+    {
+        return;
+    }
+
+    int remainder;
+    while(1)
+    {
+        remainder = num % 10;
+        num = num / 10;
+        dyn_string_add_char(string,'0'+remainder);
+        if(num == 0)
+        {
+            break;
+        }
+    }
+    dyn_string_add_string(old,string->string);
+    dyn_string_free(string);
+
+}
