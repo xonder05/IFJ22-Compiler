@@ -36,6 +36,7 @@ typedef struct symbolFunctionInfo
     argumentsOfFunction_t arguments;
     bool defined;
     VariableType_t returnType;
+    bool haveReturn;
 } symbolFunctionInfo_t;
 
 typedef struct symbolVariableInfo
@@ -83,6 +84,8 @@ symbol_t* findSymTable(symTable_t* Table, Dyn_String* Name, Dyn_String* Context)
 bool insertSymTable(symTable_t* Table, symbol_t* Symbol);
 
 bool isAllFunctionDefined(symTable_t* Table);
+
+bool insertPremadeFunction(symTable_t* Table);
 
 //Symbol
 symbol_t* initSymbol(symbolType_t Type, Dyn_String* Name, Dyn_String* Context);

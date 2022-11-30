@@ -216,6 +216,301 @@ bool isAllFunctionDefined(symTable_t* Table)
 	return true;
 }
 
+bool insertPremadeFunction(symTable_t* Table)
+{
+	symbol_t* Func;
+	Dyn_String* FuncName = dyn_string_init();
+	if (FuncName == NULL)
+	{
+		return false;
+	}
+	// function reads() : ?string
+	if (dyn_string_add_string(FuncName, "reads") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments.countOfArguments = 0;
+	Func->info.function.arguments.TypesOfArguments = NULL;
+	Func->info.function.defined = true;
+	Func->info.function.returnType = STRING_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	dyn_string_clear(FuncName);
+	// function readi() : ?int
+	if (dyn_string_add_string(FuncName, "readi") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments.countOfArguments = 0;
+	Func->info.function.arguments.TypesOfArguments = NULL;
+	Func->info.function.defined = true;
+	Func->info.function.returnType = INT_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+	
+
+	// function readf() : ?float
+		if (dyn_string_add_string(FuncName, "readf") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments.countOfArguments = 0;
+	Func->info.function.arguments.TypesOfArguments = NULL;
+	Func->info.function.defined = true;
+	Func->info.function.returnType = FLOAT_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	dyn_string_clear(FuncName);
+	
+
+	// function write ( term1 , term2 , …, term𝑛 ) : void
+	if (dyn_string_add_string(FuncName, "write") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments.countOfArguments = -1;
+	Func->info.function.arguments.TypesOfArguments = NULL;
+	Func->info.function.defined = true;
+	Func->info.function.returnType = NULL_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	
+	dyn_string_clear(FuncName);
+	// function floatval(term) : float 
+		if (dyn_string_add_string(FuncName, "floatval") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments = initArguments();
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_FLOAT);
+	Func->info.function.defined = true;
+	Func->info.function.returnType = FLOAT_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	
+	dyn_string_clear(FuncName);
+	
+
+	// function intval(term) : int 
+	if (dyn_string_add_string(FuncName, "intval") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments = initArguments();
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_INT);
+	Func->info.function.defined = true;
+	Func->info.function.returnType = INT_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	
+	dyn_string_clear(FuncName);
+	// function strlen(string $𝑠) : int
+	if (dyn_string_add_string(FuncName, "strlen") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments = initArguments();
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_STRING);
+	Func->info.function.defined = true;
+	Func->info.function.returnType = INT_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	
+	dyn_string_clear(FuncName);
+	// function substring(string $𝑠, int $𝑖, int $𝑗) : ?string
+	if (dyn_string_add_string(FuncName, "substring") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments = initArguments();
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_STRING);
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_INT);
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_INT);
+	Func->info.function.defined = true;
+	Func->info.function.returnType = STRING_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	
+	dyn_string_clear(FuncName);
+	// function ord(string $c) : int 
+	if (dyn_string_add_string(FuncName, "ord") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments = initArguments();
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_STRING);
+	Func->info.function.defined = true;
+	Func->info.function.returnType = INT_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	
+	dyn_string_clear(FuncName);
+
+	// function chr(int $i) : string
+	if (dyn_string_add_string(FuncName, "chr") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments = initArguments();
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_INT);
+	Func->info.function.defined = true;
+	Func->info.function.returnType = STRING_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	dyn_string_free(FuncName);
+
+	return true;
+}
+
 symbol_t* initSymbol(symbolType_t Type, Dyn_String* Name, Dyn_String* Context)
 {
 	symbol_t *symbol = malloc(sizeof(symbol_t));
@@ -267,6 +562,7 @@ symbol_t* initSymbol(symbolType_t Type, Dyn_String* Name, Dyn_String* Context)
 		symbol->info.function.arguments.TypesOfArguments = NULL;
 		symbol->info.function.defined = false;
 		symbol->info.function.returnType = ERROR_TYPE;
+		symbol->info.function.haveReturn = false;
     }
     else 
     {
@@ -282,8 +578,7 @@ void freeSymbol(symbol_t* Symbol)
 		return;
 	}
 	if (Symbol->type == TYPE_FUNCTION) {
-		dyn_string_free(Symbol->name);
-        Symbol->name = NULL;
+		free(Symbol->info.function.arguments.TypesOfArguments);
 	}
 	if (Symbol->context != NULL) {
 		dyn_string_free(Symbol->context);

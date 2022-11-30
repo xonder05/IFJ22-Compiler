@@ -84,3 +84,21 @@ void printStack(stack_t *stack)
         i++;
     }
 }
+
+
+int sizeStack(stack_t* stack)
+{
+    int i = 0;
+    InputChars top;
+    while (true)
+    {
+        top = topStack(stack, i);
+        if (top == EMPTY)
+        {
+            break;
+        }
+        i++;
+    }
+
+    return i;
+}

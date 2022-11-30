@@ -2,6 +2,7 @@
 #include "scanner.h"
 #include "expressions.h"
 #include "symtable.h"
+#include "error.h"
 
 #include "testing_utils.h"
 
@@ -61,6 +62,11 @@ int parse()
     //Prepare 
     symTable_t* Table = initSymTable();
     //insert premade function
+    if (insertPremadeFunction(Table) == false)
+    {
+        freeSymTable(Table);
+        call_error(OTHERS_ERROR);
+    }
 
     scanner_result = get_token();
     scanner_result_is_processed = false;
@@ -76,10 +82,11 @@ int parse()
     //check if all function is defined
     if (isAllFunctionDefined(Table) == false)
     {
-        exit(-1);
+        freeSymTable(Table);
+        call_error(SEMANTIC_FUNC_ERROR);
     }
 
-
+    clearSymTable(Table);
 
     return 1;
 }
@@ -139,8 +146,9 @@ int command_or_declare_function(symTable_t* Table)
 
     if (result == FIAL_IN_MIDDLE)
     {
-        //Error !!
-        exit(-1);
+        
+        freeSymTable(Table);
+        call_error(SYNTAX_ERROR);
     }
 
     result = command(Table);
@@ -196,8 +204,8 @@ int delcare_function(symTable_t* Table)
         //Func already defined !!!
         if (NewFunction->info.function.defined == true)
         {
-
-            exit(0);
+            freeSymTable(Table);
+            call_error(SEMANTIC_FUNC_ERROR);
         }
 
         needToCheckArgumetns = true;
@@ -205,7 +213,9 @@ int delcare_function(symTable_t* Table)
 
     if (changeContext(Table, scanner_result.string) == false)
     {
-        exit(1); //!!!
+        
+        freeSymTable(Table);
+        call_error(OTHERS_ERROR);
     }
 
     //(
@@ -232,7 +242,8 @@ int delcare_function(symTable_t* Table)
     {
         if (NewArguments.countOfArguments != NewFunction->info.function.arguments.countOfArguments)
         {
-            exit(-1);
+            freeSymTable(Table);
+            call_error(SEMANTIC_FUNC_ERROR);
         }
     }
 
@@ -247,7 +258,6 @@ int delcare_function(symTable_t* Table)
     }
 
     scanner_result_is_processed = true;
-
 
     //TOKEN_COLON
     get_unprocessed_token();
@@ -290,6 +300,13 @@ int delcare_function(symTable_t* Table)
         break;
     }
 
+    if (insertSymTable(Table, NewFunction) == false)
+    {
+        freeSymTable(Table);
+        call_error(OTHERS_ERROR);
+    }
+
+
     //TOKEN_L_BRAC 
     get_unprocessed_token();
 
@@ -316,10 +333,14 @@ int delcare_function(symTable_t* Table)
 
     scanner_result_is_processed = true;
 
+    if (NewFunction->info.function.returnType != NULL_TYPE && NewFunction->info.function.haveReturn == false)
+    {
+        freeSymTable(Table);
+        call_error(SEMANTIC_PARAM_ERROR);
+    }
+
     NewFunction->info.function.defined = true;
     changeContext(Table, NULL);
-    //SymTable: insert function
-    insertSymTable(Table, NewFunction);
     
     return 1;
 }
@@ -366,9 +387,9 @@ int command(symTable_t* Table)
     }
 
     if (result == -1)
-    {
-        //!!! Error
-        exit(-1);
+    {        
+        freeSymTable(Table);
+        call_error(SYNTAX_ERROR);
     }
 
     //Call function
@@ -381,8 +402,8 @@ int command(symTable_t* Table)
 
     if (result == -1)
     {
-        //!!! Error
-        exit(-1);
+        freeSymTable(Table);
+        call_error(SYNTAX_ERROR);
     }
 
     //return
@@ -395,8 +416,8 @@ int command(symTable_t* Table)
 
     if (result == -1)
     {
-        //!!! Error
-        exit(-1);
+        freeSymTable(Table);
+        call_error(SYNTAX_ERROR);
     }
 
     //epsilon
@@ -425,7 +446,8 @@ int command_variable(symTable_t* Table)
         
         if(NewVar == NULL)
         {
-            exit(1);
+            freeSymTable(Table);
+            call_error(OTHERS_ERROR);
         }
         insertSymTable(Table, NewVar);
     }
@@ -670,11 +692,44 @@ int command_return(symTable_t* Table)
     scanner_result_is_processed = true; 
 
     //  EXPRESSION
-    if (expresion(scanner_result) != SUCCESS)
+    int result = expresion(scanner_result);
+    if (result == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
     }
 
+    if (Table->CurentContext != NULL)
+    {
+        symbol_t* Func = findSymTable(Table, Table->CurentContext, NULL);
+        if (Func == NULL)
+        {
+            freeSymTable(Table);
+            call_error(OTHERS_ERROR);
+        }
+        if(result == FAIL_IN_BEGIN)
+        {
+            if (Func->info.function.returnType != NULL_TYPE)
+            {
+                printf("KEK\n\n");
+                freeSymTable(Table);
+                call_error(SEMANTIC_PARAM_ERROR);
+            }
+
+            Func->info.function.haveReturn = true;
+        }
+        else 
+        {
+            if (Func->info.function.returnType == NULL_TYPE)
+            {
+                freeSymTable(Table);
+                call_error(SEMANTIC_RETURN_ERROR);
+            }
+
+            Func->info.function.haveReturn = true;
+        }
+    }
+ 
+    
     //  TOKEN_SEMICOLON
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_SEMICOLON)
@@ -742,9 +797,10 @@ int call_function(symTable_t* Table, VariableType_t* RetrunType)
 
     if(NewFunc->info.function.defined == true || findSymTable(Table, NewFunc->name, NULL) != NULL)
     {
-        if (NewFunc->info.function.arguments.countOfArguments != FuncArguments.countOfArguments)
+        if (NewFunc->info.function.arguments.countOfArguments != FuncArguments.countOfArguments && NewFunc->info.function.arguments.countOfArguments != -1)
         {
-            exit(-1);
+            freeSymTable(Table);
+            call_error(SEMANTIC_PARAM_ERROR);
         }
     }
     else
@@ -752,7 +808,8 @@ int call_function(symTable_t* Table, VariableType_t* RetrunType)
         NewFunc->info.function.arguments.countOfArguments = FuncArguments.countOfArguments;
         if(insertSymTable(Table, NewFunc) == false)
         {
-            exit(-1);
+            freeSymTable(Table);
+            call_error(OTHERS_ERROR);
         }
 
     }
@@ -785,7 +842,8 @@ int term_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments)
     {
         if (addArgumentByKeyword(Arguments, KEYWORD_INT) == false)
         {
-            exit(-1);
+            freeSymTable(Table);
+            call_error(OTHERS_ERROR);
         }
         
         result = term_next(Table, Arguments);
@@ -798,7 +856,8 @@ int term_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments)
     {
         if (addArgumentByKeyword(Arguments, KEYWORD_FLOAT) == false)
         {
-            exit(-1);
+            freeSymTable(Table);
+            call_error(OTHERS_ERROR);
         }
          result = term_next(Table, Arguments);
         if (result != FIAL_IN_MIDDLE)
@@ -811,16 +870,19 @@ int term_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments)
         symbol_t* Var = findSymTableInCurentConxtext(Table, scanner_result.string);
         if( Var == NULL)
         {
-            exit(-1);
+            freeSymTable(Table);
+            call_error(SEMANTIC_VAR_ERROR);
         }
         if (Var->type != TYPE_VARIABLE)
         {
-            exit(-1);
+            freeSymTable(Table);
+            call_error(SEMANTIC_VAR_ERROR);
         }
 
         if (addArgumentByKeyword(Arguments, Var->info.variable.curentType) == false)
         {
-            exit(-1);
+            freeSymTable(Table);
+            call_error(OTHERS_ERROR);
         }
 
         result = term_next(Table, Arguments);
@@ -833,7 +895,8 @@ int term_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments)
     {
         if (addArgumentByKeyword(Arguments, KEYWORD_STRING) == false)
         {
-            exit(-1);
+            freeSymTable(Table);
+            call_error(OTHERS_ERROR);
         }
 
         result = term_next(Table, Arguments);
@@ -976,17 +1039,20 @@ int parametrs_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Argument
     
     if(NewVar != NULL)
     {
-        exit(-1);
+        freeSymTable(Table);
+        call_error(SEMANTIC_VAR_ERROR);
     }
 
     NewVar = initSymbol(TYPE_VARIABLE, scanner_result.string, Table->CurentContext);
     if (NewVar == NULL)
     {
-        exit(-1);
+            freeSymTable(Table);
+            call_error(OTHERS_ERROR);
     }
     if (insertSymTable(Table, NewVar) == false)
     {
-        exit(-1);
+            freeSymTable(Table);
+            call_error(OTHERS_ERROR);
     }
 
     int result = parametrs_next(Table, Arguments);

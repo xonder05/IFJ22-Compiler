@@ -33,4 +33,5 @@ stack_t* pushStack(stack_t *stack, stackItem_t item);
 stack_t *popStack(stack_t *stack);
 void disposeStack(stack_t *stack);
 void printStack(stack_t *stack);
+int sizeStack(stack_t* stack);
 // return values 0 success 1 fail
