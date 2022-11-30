@@ -1,118 +1,190 @@
 #include "expressions.h"
-#include "stack.h"
 
-
-InputChars convertrToken(token_t token)
+operator convertInputCharsToOperator(InputChars input)
 {
-    //printf("token %d\n", token.type);
-    InputChars input;
+        int output;
+        switch (input)
+        {
+        case PLUS:
+            output = Plus;
+            break;
+        case MINUS:
+            output = Minus;
+            break;
+        case MULTIPLY:
+            output = Multiply;
+            break;
+        case DIVIDE:
+            output = Divide;
+            break;
+        case DOT:
+            output = Dot;
+            break;
+        case EQUAL:
+            output = Equal;
+            break;
+        case NOTEQUAL:
+            output = NotEqual;
+            break;
+        case GREATER:
+            output = Greater;
+            break;
+        case GREATER_EQUAL:
+            output = GreaterEqual;
+            break;
+        case LESSER:
+            output = Lesser;
+            break;
+        case LESSER_EQUAL:
+            output = LesserEqual;
+            break;
+        default:
+            output = Error;
+        break;
+        }
+        return output;
+}
+
+
+
+stackItem_t convertrToken(token_t token, symTable_t* table)
+{
+    stackItem_t input;
+    symbol_t *symbol; 
+
     switch (token.type){
         case TOKEN_PLUS:
-            input = PLUS;
+            input.type = PLUS;
             break;
 
         case TOKEN_MINUS:
-            input = MINUS;
+            input.type = MINUS;
             break;
 
         case TOKEN_MULTIPLY:
-            input = MULTIPLY;
+            input.type = MULTIPLY;
             break;
 
         case TOKEN_DIVIDE:
-            input = DIVIDE;
+            input.type = DIVIDE;
             break;
 
         case TOKEN_DOT:
-            input = DOT;
+            input.type = DOT;
             break;
 
         case TOKEN_BIGGER:
-            input = GREATER;
+            input.type = GREATER;
             break;
 
         case TOKEN_BIGGER_EQ:
-            input = GREATER_EQUAL;
+            input.type = GREATER_EQUAL;
             break;
 
         case TOKEN_SMALLER:
-            input = LESSER;
+            input.type = LESSER;
             break;
 
         case TOKEN_SMALL_EQ:
-            input = LESSER_EQUAL;
+            input.type = LESSER_EQUAL;
             break;
         
         case TOKEN_EQUAL2:
-            input = EQUAL;
+            input.type = EQUAL;
             break;
         
         case TOKEN_NOT_EQUAL:
-            input = NOTEQUAL;
+            input.type = NOTEQUAL;
             break;
         
         case TOKEN_L_PAR:
-            input = LPAR;
+            input.type = LPAR;
             break;
 
         case TOKEN_R_PAR:
-            input = RPAR;
+            input.type = RPAR;
             break;
 
         case TOKEN_L_BRAC:
-            input = END_OF_EXPRESSION;
+            input.type = END_OF_EXPRESSION;
             ungetc('{', stdin);
             break;
 
         case TOKEN_SEMICOLON:
-            input = END_OF_EXPRESSION;
+            input.type = END_OF_EXPRESSION;
             ungetc(';', stdin);
             break;
         
-        case TOKEN_INT: case TOKEN_FLOAT: case TOKEN_STRING: case TOKEN_VAR_ID:
-            input = I;
+        case TOKEN_INT:
+            input.type = I;
+            input.data = createExpSubtree(NULL, NULL, &token.int_value, NULL, NULL);
+            break;
+
+        case TOKEN_FLOAT:
+            input.type = I;
+            input.data = createExpSubtree(NULL, NULL, NULL, &token.float_value, NULL);
+            break; 
+
+        case TOKEN_STRING:
+            input.type = I;
+            input.data = createExpSubtree(NULL, NULL, NULL, NULL, token.string);
+            break;
+
+        case TOKEN_VAR_ID:
+            symbol = findSymTableInCurentConxtext(table, token.string);
+            if (symbol == NULL)
+            {
+                fprintf(stderr, "undefined variable\n");
+                exit(0);
+            }
+            input.type = I;
+            input.data = createExpSubtree(symbol, NULL, NULL, NULL, NULL);
             break;
         
         case TOKEN_KEYWORD:
             if (token.keyword == KEYWORD_NULL)
             {
-                input = I;
+                input.type = I;
+                input.data = createExpSubtree(NULL, NULL, NULL, NULL, NULL);
+                //printf("data type %d\n", input.data->type);
                 break;
             }
             else
             {            
                 fprintf(stderr, "token not allowed in expression\n");
-                input = NOT_ALLOWED_CHAR;
+                input.type = NOT_ALLOWED_CHAR;
                 break;
             }
         default:
+            //printf("token type %d\n", token.type);
             fprintf(stderr, "token not allowed in expression\n");
-            input = NOT_ALLOWED_CHAR;
+            input.type = NOT_ALLOWED_CHAR;
         }
     return input;
 }
 
-InputChars findFirstExpressionChar(token_t token)
+stackItem_t findFirstExpressionChar(token_t token, symTable_t* table)
 {
     if (token.type == TOKEN_KEYWORD && token.keyword != KEYWORD_NULL)
     {
         token = get_token();
     }
-    return convertrToken(token);
+    stackItem_t item = convertrToken(token, table);
+    return item;
 }
 
-InputChars getNewInput()
+stackItem_t getNewInput(symTable_t* table)
 {
     token_t token = get_token();
-    InputChars input = convertrToken(token);
+    stackItem_t input = convertrToken(token, table);
     return input;
 }
 
-InputChars closestToTopNonTerminal(stack_t *stack)
+stackItem_t closestToTopNonTerminal(stack_t *stack)
 {
     int i = 0;
-    InputChars stacktop = topStack(stack, i);
-    while(stacktop == EXPRESSION || stacktop == HANDLE)
+    stackItem_t stacktop = topStack(stack, i);
+    while(stacktop.type == EXPRESSION || stacktop.type == HANDLE)
     {
         stacktop = topStack(stack, i);
         i++;
@@ -122,20 +194,22 @@ InputChars closestToTopNonTerminal(stack_t *stack)
 
 void insertHandle(stack_t *stack)
 {
-    InputChars *ptr = malloc(sizeof(InputChars)); 
-    InputChars handle = closestToTopNonTerminal(stack);
-    InputChars top = topStack(stack, 0);
+    stackItem_t *ptr = malloc(sizeof(stackItem_t)); 
+    stackItem_t handle = closestToTopNonTerminal(stack);
+    stackItem_t top = topStack(stack, 0);
     int i = 0;
-    while (top != handle)
+    while (top.type != handle.type)
     {
         popStack(stack);
         i++;
-        ptr = realloc(ptr, sizeof(InputChars)*i);
+        ptr = realloc(ptr, sizeof(stackItem_t)*i);
         ptr[i-1] = top;
         top = topStack(stack, 0);
     }
 
-    pushStack(stack, HANDLE);
+    handle.type = HANDLE;
+    handle.data = NULL;
+    pushStack(stack, handle);
 
     while (i > 0)
     {
@@ -146,7 +220,7 @@ void insertHandle(stack_t *stack)
     free(ptr);
 }
 
-void shiftToStack(stack_t *stack, InputChars input)
+void shiftToStack(stack_t *stack, stackItem_t input)
 {
     //printf("shifttostack\n");
     insertHandle(stack);
@@ -156,14 +230,15 @@ void shiftToStack(stack_t *stack, InputChars input)
 int reduce(stack_t *stack)
 {
     //printf("reduce\n");
-    int top = topStack(stack, 0);
-    if (top == I)
+    stackItem_t top = topStack(stack, 0);
+    if (top.type == I)
     {
-        if (topStack(stack, 1) == HANDLE )
+        if (topStack(stack, 1).type == HANDLE )
         {
             popStack(stack);
             popStack(stack);
-            pushStack(stack, EXPRESSION);
+            top.type = EXPRESSION;
+            pushStack(stack, top);
             return 0;
         }
         else
@@ -171,15 +246,17 @@ int reduce(stack_t *stack)
             return 1;
         } 
     }
-    else if (top == RPAR)
+    else if (top.type == RPAR)
     {
-        if (topStack(stack, 1) == EXPRESSION && topStack(stack, 2) == LPAR && topStack(stack,3) == HANDLE)
+        if (topStack(stack, 1).type == EXPRESSION && topStack(stack, 2).type == LPAR && topStack(stack,3).type == HANDLE)
         {
-            popStack(stack);
-            popStack(stack);
-            popStack(stack);
-            popStack(stack);
-            pushStack(stack, EXPRESSION);
+            popStack(stack); //pop rpar
+            top = topStack(stack, 0); //save expression
+            popStack(stack); //pop expression
+            popStack(stack); //pop lpar
+            popStack(stack); //pop handle
+            top.type = EXPRESSION;
+            pushStack(stack, top);
             return 0;
         }
         else
@@ -188,18 +265,27 @@ int reduce(stack_t *stack)
         }
 
     }
-    else if (top == EXPRESSION)
+    else if (top.type == EXPRESSION)
     {
-        if ( (topStack(stack, 1) == PLUS || topStack(stack, 1) == MINUS || topStack(stack, 1) == MULTIPLY || topStack(stack, 1) == DIVIDE || topStack(stack, 1) == DOT 
-        || topStack(stack, 1) == EQUAL || topStack(stack, 1) == NOTEQUAL || topStack(stack, 1) == GREATER || topStack(stack, 1) == GREATER_EQUAL 
-        || topStack(stack, 1) == LESSER || topStack(stack, 1) == LESSER_EQUAL)
-        && topStack(stack, 2) == EXPRESSION && topStack(stack,3) == HANDLE)
+        if ( (topStack(stack, 1).type == PLUS || topStack(stack, 1).type == MINUS || topStack(stack, 1).type == MULTIPLY 
+        || topStack(stack, 1).type == DIVIDE || topStack(stack, 1).type == DOT 
+        || topStack(stack, 1).type == EQUAL || topStack(stack, 1).type == NOTEQUAL || topStack(stack, 1).type == GREATER 
+        || topStack(stack, 1).type == GREATER_EQUAL || topStack(stack, 1).type == LESSER || topStack(stack, 1).type == LESSER_EQUAL)
+        && topStack(stack, 2).type == EXPRESSION && topStack(stack,3).type == HANDLE)
         {
+            stackItem_t left = topStack(stack, 0);
+            stackItem_t right = topStack(stack, 2);
+            stackItem_t op = topStack(stack, 1);
+            if (convertInputCharsToOperator(op.type) == -1) { fprintf(stderr, "convert fail\n"); exit(0);}
+            ast_t* node = createExpressionNode(convertInputCharsToOperator(op.type), left.data, right.data);
+            stackItem_t item;
+            item.type = EXPRESSION;
+            item.data = createExpSubtree(NULL, node, NULL, NULL, NULL);
             popStack(stack);
             popStack(stack);
             popStack(stack);
             popStack(stack);
-            pushStack(stack, EXPRESSION);
+            pushStack(stack, item);
             return 0;
         }
         else
@@ -215,10 +301,10 @@ int reduce(stack_t *stack)
 }
 
 
-int startend(stack_t *stack, InputChars input, bool *nextInput)
+int startend(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("startend\n");
-    switch (input)
+    switch (input.type)
     {
      case PLUS: case MINUS: case MULTIPLY: case DIVIDE: case DOT:
      case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: 
@@ -232,10 +318,10 @@ int startend(stack_t *stack, InputChars input, bool *nextInput)
     }
 }
 
-int plus(stack_t *stack, InputChars input, bool *nextInput)
+int plus(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("plus\n");
-    switch (input)
+    switch (input.type)
     {
     case PLUS: case MINUS: case DOT: case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: case RPAR: case END_OF_EXPRESSION:
         *nextInput = false;
@@ -251,10 +337,10 @@ int plus(stack_t *stack, InputChars input, bool *nextInput)
     }
 }
 
-int minus(stack_t *stack, InputChars input, bool *nextInput)
+int minus(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("minus\n");
-    switch (input)
+    switch (input.type)
     {
     case PLUS: case MINUS: case DOT: case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: case RPAR: case END_OF_EXPRESSION:
         *nextInput = false;
@@ -270,10 +356,10 @@ int minus(stack_t *stack, InputChars input, bool *nextInput)
     }
     return 0;
 }
-int multipy(stack_t *stack, InputChars input, bool *nextInput)
+int multipy(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("multiply\n");
-    switch (input)
+    switch (input.type)
     {
     case PLUS: case MINUS: case DOT: case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: 
     case RPAR: case MULTIPLY: case DIVIDE: case END_OF_EXPRESSION:
@@ -289,10 +375,10 @@ int multipy(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int divide(stack_t *stack, InputChars input, bool *nextInput)
+int divide(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("divide\n");
-    switch (input)
+    switch (input.type)
     {
     case PLUS: case MINUS: case DOT: case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: 
     case RPAR: case MULTIPLY: case DIVIDE: case END_OF_EXPRESSION:
@@ -308,10 +394,10 @@ int divide(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int dot(stack_t *stack, InputChars input, bool *nextInput)
+int dot(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("dot\n");
-    switch (input)
+    switch (input.type)
     {
     case PLUS: case MINUS: case DOT: case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: case RPAR: case END_OF_EXPRESSION:
         *nextInput = false;
@@ -326,10 +412,10 @@ int dot(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int equal(stack_t *stack, InputChars input, bool *nextInput)
+int equal(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("equal\n");
-    switch (input)
+    switch (input.type)
     {
     case EQUAL: case NOTEQUAL: case RPAR: case END_OF_EXPRESSION:
         *nextInput = false;
@@ -344,10 +430,10 @@ int equal(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int notequal(stack_t *stack, InputChars input, bool *nextInput)
+int notequal(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("notequal\n");
-    switch (input)
+    switch (input.type)
     {    
     case EQUAL: case NOTEQUAL: case RPAR: case END_OF_EXPRESSION:
         *nextInput = false;
@@ -362,10 +448,10 @@ int notequal(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int greater(stack_t *stack, InputChars input, bool *nextInput)
+int greater(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("greater\n");
-    switch (input)
+    switch (input.type)
     {
      case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: case RPAR: case END_OF_EXPRESSION:
         *nextInput = false;
@@ -381,10 +467,10 @@ int greater(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int greater_equal(stack_t *stack, InputChars input, bool *nextInput)
+int greater_equal(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("greaterequal\n");
-    switch (input)
+    switch (input.type)
     {
      case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: case RPAR: case END_OF_EXPRESSION:
         *nextInput = false;
@@ -399,10 +485,10 @@ int greater_equal(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int lesser(stack_t *stack, InputChars input, bool *nextInput)
+int lesser(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("lesser\n");
-    switch (input)
+    switch (input.type)
     {
      case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: case RPAR: case END_OF_EXPRESSION:
         *nextInput = false;
@@ -417,10 +503,10 @@ int lesser(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int lesser_equal(stack_t *stack, InputChars input, bool *nextInput)
+int lesser_equal(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("lesserequal\n");
-    switch (input)
+    switch (input.type)
     {
      case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: case RPAR: case END_OF_EXPRESSION:
         *nextInput = false;
@@ -435,10 +521,10 @@ int lesser_equal(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int lpar(stack_t *stack, InputChars input, bool *nextInput)
+int lpar(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("lpar\n");
-    switch (input)
+    switch (input.type)
     {
      case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL:
      case PLUS: case MINUS: case MULTIPLY: case DIVIDE: case DOT:  case I: case LPAR:
@@ -447,7 +533,9 @@ int lpar(stack_t *stack, InputChars input, bool *nextInput)
         return 0;
 
     case RPAR:
-        pushStack(stack, RPAR);
+        input.data = NULL;
+        input.type = RPAR;
+        pushStack(stack, input);
         *nextInput = true;
         return 0;
 
@@ -455,10 +543,10 @@ int lpar(stack_t *stack, InputChars input, bool *nextInput)
         return 1;
     }
 }
-int rpar(stack_t *stack, InputChars input, bool *nextInput)
+int rpar(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("rpar\n");
-    switch (input)
+    switch (input.type)
     {
      case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: case RPAR:
      case PLUS: case MINUS: case MULTIPLY: case DIVIDE: case DOT:  case I: case LPAR: case END_OF_EXPRESSION:
@@ -470,10 +558,10 @@ int rpar(stack_t *stack, InputChars input, bool *nextInput)
     }
 }
 
-int i(stack_t *stack, InputChars input, bool *nextInput)
+int i(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     //printf("i\n");
-    switch (input)
+    switch (input.type)
     {
      case PLUS: case MINUS: case MULTIPLY: case DIVIDE: case DOT: case RPAR:
      case EQUAL: case NOTEQUAL: case GREATER: case GREATER_EQUAL: case LESSER: case LESSER_EQUAL: case END_OF_EXPRESSION:
@@ -485,25 +573,29 @@ int i(stack_t *stack, InputChars input, bool *nextInput)
     }
 }
 
-int expresion(token_t scanner_result)
+ast_t* expresion(token_t scanner_result, symTable_t* table)
 {
     //printf("-----------------------------------------------------------------------------------------------------------------------------------\n");
     //printf("scanner result %d\n", scanner_result.type);
     
     stack_t *stack = NULL;
     stack = initStack(stack);
-    stack = pushStack(stack, STARTEND);
+    stackItem_t input;
+    input.data = NULL;
+    input.type = STARTEND;
+    stack = pushStack(stack, input);
 
-    InputChars input = findFirstExpressionChar(scanner_result);
-    InputChars stacktop = closestToTopNonTerminal(stack);
+    input = findFirstExpressionChar(scanner_result, table);
+    stackItem_t stacktop = closestToTopNonTerminal(stack);
     bool nextInput = false;
     bool fail = false;
 
     do{
         //printf("--------------new round--------------\n");
-        //printf("input %d, stacktop %d\n", input, stacktop);
+        //printf("input %d, stacktop %d\n", input.type, stacktop.type);
+        
         //printStack(stack);
-        switch (stacktop)
+        switch (stacktop.type)
         {
         case STARTEND :
             fail = startend(stack, input, &nextInput);
@@ -563,27 +655,54 @@ int expresion(token_t scanner_result)
         if (nextInput == true)
         {
             nextInput = false;
-            input = getNewInput();
+            input = getNewInput(table);
         }
         stacktop = closestToTopNonTerminal(stack);
 
-    } while (input != END_OF_EXPRESSION || topStack(stack, 0) != EXPRESSION || topStack(stack, 1) != STARTEND);
+    } while (input.type != END_OF_EXPRESSION || topStack(stack, 0).type != EXPRESSION || topStack(stack, 1).type != STARTEND);
 
 
-    printStack(stack);
+    //printStack(stack);
+
+    stackItem_t item = topStack(stack, 0);
+    ast_t* result;
+    switch (item.data->type)
+    {
+    case imm:
+        result = createExpressionNode(SingleOp, item.data, NULL);
+        break;
+    case op:
+        result = createExpressionNode(SingleOp, item.data, NULL);
+        break;
+    case nul:
+        result = createExpressionNode(SingleOp, item.data, NULL);
+        break;
+    case exp:
+        result = item.data->data.exp;
+        break;
+    default:
+        fprintf(stderr,"error\n");   
+        exit(0);
+        break;
+    }
+
+    //printTree(result);
+
+
+
     disposeStack(stack);
 
     if (fail == true)
     {
         fprintf(stderr, "expression fail\n");
         //printf("-----------------------------------------------------------------------------------------------------------------------------------\n");
-        return 0;
+        return NULL;
     }
     else
     {
         printf("expression success\n");
         //printf("-----------------------------------------------------------------------------------------------------------------------------------\n");
-        return 1;
+        return result;
     }
 
 }

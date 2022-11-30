@@ -121,26 +121,49 @@ ast_t* printTree(ast_t *tree)
         printf("\n");
         break;
     case expression:
-        printf("OP - %d (", tree->thiscommand.expression.operator);
+        printf("Expression:\n");
+        if (tree->thiscommand.expression.operator == SingleOp)
+        {
+            printf("SingleOp\n");
+            break;
+        }
+
+        printf("OP - %d\n", tree->thiscommand.expression.operator);
         if (tree->thiscommand.expression.left->type == exp)
         {
-            printf("L - ");
+            printf("Left Subtree:\n");
             printTree(tree->thiscommand.expression.left->data.exp);
         }
         else if (tree->thiscommand.expression.left->type == op)
         {
-            printf("L - %s : ", tree->thiscommand.expression.left->data.op->name->string);
+            printf("L - %s \n", tree->thiscommand.expression.left->data.op->name->string);
+        }
+        else if (tree->thiscommand.expression.left->type == imm)
+        {
+            printf("L - %ld \n", tree->thiscommand.expression.left->data.imm.data.type_int);
+        }
+        else if (tree->thiscommand.expression.left->type == nul)
+        {
+            printf("L - nul\n");
         }
         if (tree->thiscommand.expression.right->type == exp)
         {
-            printf("R - ");
+            printf("Right Subtree:\n");
             printTree(tree->thiscommand.expression.right->data.exp);
         }
         else if (tree->thiscommand.expression.right->type == op)
         {
-            printf("R - %s", tree->thiscommand.expression.right->data.op->name->string);
+            printf("R - %s \n", tree->thiscommand.expression.right->data.op->name->string);
         }
-        printf(")");
+        else if (tree->thiscommand.expression.right->type == imm)
+        {
+            printf("R - %ld \n", tree->thiscommand.expression.right->data.imm.data.type_int);
+        }
+        else if (tree->thiscommand.expression.left->type == nul)
+        {
+            printf("R - nul \n");
+        }
+        printf("\n");
         break;
     default:
         break;
@@ -258,7 +281,7 @@ void disposeTree(ast_t* tree)
 }
 
 
-exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, int* imm_int, float* imm_float, Dyn_String* imm_string)
+exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_int, double* imm_float, Dyn_String* imm_string)
 {
     exp_subtree_t *tree = malloc(sizeof(exp_subtree_t));
     if (tree == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
@@ -289,7 +312,12 @@ exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, int* imm_int, 
     {
         tree->type = imm;
         tree->data.imm.type = type_string;
-        tree->data.imm.data.type_string = *imm_string;
+        tree->data.imm.data.type_string = imm_string;
+    }
+    else if (symbol == NULL && subtree == NULL && imm_int == NULL && imm_float == NULL && imm_string == NULL)
+    {
+        tree->type = nul;
+        tree->data.exp = NULL;
     }
     else
     {

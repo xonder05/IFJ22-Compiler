@@ -10,22 +10,22 @@ typedef enum{
     root, assigment_expression, assigment_func, declare_func, if_statement, while_statement, expression
 }nodeType;
 
-typedef enum {plus, minus, multiply, divide, equal, notEqual, greater, lesser, greaterEqual, lesserEqual
+typedef enum {SingleOp, Plus, Minus, Multiply, Divide, Dot, Equal, NotEqual, Greater, Lesser, GreaterEqual, LesserEqual, Error = -1
 }operator;
 
 
 typedef enum {type_int, type_float, type_string}imm_type_t;
 typedef union imm_uni {
-        int type_int;
-        float type_float;
-        Dyn_String type_string;
+        long int type_int;
+        double type_float;
+        Dyn_String *type_string;
 }imm_uni_t;
 typedef struct immediate_operand{
     imm_type_t type;
     imm_uni_t data;    
 }imm_t;
 typedef struct expression_subtree{
-    enum sub_tree_type {op, exp, imm}type;
+    enum sub_tree_type {op, exp, imm, nul}type;
     union exp_sub_uni{
         symbol_t *op; 
         ast_t *exp;
@@ -35,7 +35,7 @@ typedef struct expression_subtree{
 
 
 typedef struct func_parameters{
-    enum {par_op, par_imm, par_null}type;
+    enum {par_op, par_imm, par_null}type; //mozna by slo vyuzivat seznam typů z symbol_t
     symbol_t *op;
     imm_t imm;
 }func_par_t;
@@ -44,7 +44,7 @@ typedef struct func_parameters{
 union node{
     bool prologSuccess;
     struct {symbol_t* target; ast_t *expression;} assigment_expression;
-    struct {symbol_t* target; symbol_t* func;} assigment_func;
+    struct {symbol_t* target; symbol_t* func; func_par_t* parameters;} assigment_func;
     struct {symbol_t* func_name; ast_t *func_body;} declare_func;
     struct {ast_t *expression; ast_t *true_block; ast_t *false_block;} if_statement;
     struct {ast_t *expression; ast_t *while_block; } while_statement;
@@ -73,5 +73,5 @@ void disposeTree(ast_t* tree);
 ast_t* printTree(ast_t *tree);
 
 
-exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, int* imm_int, float* imm_float, Dyn_String* imm_string);
+exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_int, double* imm_float, Dyn_String* imm_string);
 
