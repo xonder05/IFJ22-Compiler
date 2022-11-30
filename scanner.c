@@ -20,10 +20,16 @@ token_t get_token()
     }
 
 
-
-    // has to be freed with dyn_string_free(string)
-    // unless token with *string in it is returned
-    // then caller has to call free_token() on it
+/**
+ *
+ * 
+ *
+ * has to be freed with dyn_string_free(string)
+ * unless token with *string in it is returned
+ * then caller has to call free_token() on it
+ * 
+ * 
+ */
     Dyn_String *string = dyn_string_init();
 
 
@@ -695,8 +701,12 @@ token_t get_token()
 }
 
 
-
-// i use free_token() on every token, in case some had dyn_string in it
+/**
+ *  i use free_token() on every token, in case some had dyn_string in it
+ * 
+ * @return token
+ * 
+ */
 token_t deal_with_prolog()
 {
     int c;
@@ -738,21 +748,32 @@ token_t deal_with_prolog()
 
     c = getc(stdin);
 
-    // after start tag "<?" white space have to follow
+/**
+ *
+ * after start tag "<?" white space have to follow
+ * 
+ * @return token
+ * 
+ */
     if(!isspace(c))
     {
         free_token(token);
         token.type = TOKEN_PROLOG_FAIL;
         return token;
     }
-
-    // now we have to check that "declare(strict_types=1);"
-    // was send to stdin, with any amount of white spaces or comments in between
-
-    // we check if get_token() return right tokens for "declare(strict_types=1);"
-    // otherwise return token leading to lexical error
-
-    // "declare"
+/**
+ * 
+ * 
+ * now we have to check that "declare(strict_types=1);"
+ * 
+ * was send to stdin, with any amount of white spaces or comments in between
+ * 
+ * we check if get_token() return right tokens for "declare(strict_types=1);"
+ * 
+ * otherwise return token leading to lexical error
+ *  "declare"
+ *
+ */
     token = get_token(5);
     if ( token.type == TOKEN_FUNC_ID)
     {
