@@ -1,6 +1,7 @@
 #pragma once 
 #include "stack.h"
+#include "symtable.h"
+#include "abstact_syntax_tree.h"
 
-
-int expresion(token_t scanner_result);
+ast_t* expresion(token_t scanner_result, symTable_t* table);
 
