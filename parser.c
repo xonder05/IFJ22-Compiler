@@ -507,7 +507,7 @@ int command_if(symTable_t* Table)
     scanner_result_is_processed = true;
     
     //EXPRESSION
-    if (expresion(scanner_result) != SUCCESS)
+    if (expresion(scanner_result, Table ) != SUCCESS)
     {
         return FIAL_IN_MIDDLE;
     }
@@ -609,7 +609,7 @@ int command_while(symTable_t* Table)
         //get_unprocessed_token();
         print_token(&scanner_result);
     //  EXPRESSION 
-    if (expresion(scanner_result) != SUCCESS)
+    if (expresion(scanner_result, Table) != SUCCESS)
     {
         get_unprocessed_token();
         print_token(&scanner_result);
@@ -692,7 +692,7 @@ int command_return(symTable_t* Table)
     scanner_result_is_processed = true; 
 
     //  EXPRESSION
-    int result = expresion(scanner_result);
+    int result = expresion(scanner_result, Table);
     if (result == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
@@ -746,7 +746,7 @@ int call_function_or_expresion(symTable_t* Table, VariableType_t* RetrunType)
     printf("call_or_exp\n");
     if(call_function(Table, RetrunType) != SUCCESS)
     {
-        return expresion(scanner_result);
+        return expresion(scanner_result, Table);
     }
     return SUCCESS;
 }

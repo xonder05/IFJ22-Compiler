@@ -89,11 +89,11 @@ void printStack(stack_t *stack)
 int sizeStack(stack_t* stack)
 {
     int i = 0;
-    InputChars top;
+    stackItem_t top;
     while (true)
     {
         top = topStack(stack, i);
-        if (top == EMPTY)
+        if (top.type == EMPTY)
         {
             break;
         }
