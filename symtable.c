@@ -578,8 +578,7 @@ void freeSymbol(symbol_t* Symbol)
 		return;
 	}
 	if (Symbol->type == TYPE_FUNCTION) {
-		dyn_string_free(Symbol->name);
-        Symbol->name = NULL;
+		free(Symbol->info.function.arguments.TypesOfArguments);
 	}
 	if (Symbol->context != NULL) {
 		dyn_string_free(Symbol->context);
