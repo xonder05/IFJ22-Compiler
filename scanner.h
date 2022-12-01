@@ -6,7 +6,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// list of keywords
+
+/**
+ * @brief list of keywords
+ * 
+ */
 typedef enum
 {
 	KEYWORD_ELSE,
@@ -102,7 +106,10 @@ typedef enum
 
 }State_t;
 
-// TOKEN struct
+/**
+ * @brief TOKEN struct
+ * 
+ */
 typedef struct token{
     Token_type type; // enum
         long int int_value;
@@ -111,20 +118,34 @@ typedef struct token{
         Keyword keyword;
 } token_t;
 
-// return next token (struct, so NO POINTER) 
-// if token contain *string value, string has to be fried with dyn_string_free(token.string)
-// number of token (starting from 0), just for proper scanning of prolog
+
+
+/**
+ * return next token (struct, so NO POINTER)
+ * if token contain *string value, string has to be fried with dyn_string_free(token.string)
+ * number of token (starting from 0), just for proper scanning of prolog 
+ */
 token_t get_token();
 
-// deals with the "declare(static_type=1);"
-// returns either TOKEN_PROLOG or TOKEN_PROLOG_FAIL
+/**
+ * 
+ * deals with the "declare(static_type=1);"
+ * returns either TOKEN_PROLOG or TOKEN_PROLOG_FAIL
+ * 
+ */
 token_t deal_with_prolog();
 
-// called after ?>
-// returns either TOKEN_EOF or TOKEN_EOF_FAIL
-// after ?> cant be anything else than EOF or \nEOF
+/**
+ * called after ?>
+ * returns either TOKEN_EOF or TOKEN_EOF_FAIL
+ * after ?> cant be anything else than EOF or \nEOF
+ * 
+ */
 bool deal_with_end();
 
-
-// free dynamic string strored inside of token_t struct
+/**
+ * @brief free dynamic string strored inside of token_t struct
+ * 
+ * 
+ */
 void free_token(token_t token);
