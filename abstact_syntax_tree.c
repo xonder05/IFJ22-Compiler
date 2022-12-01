@@ -326,3 +326,63 @@ exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_
     }
     return tree;
 }
+
+func_par_t* parInit()
+{
+    printf("malloc\n");
+    func_par_t *parameters = malloc(sizeof(func_par_t));
+    if (parameters == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
+    parameters->type = first;
+    parameters->next = NULL;
+    return parameters;   
+}
+
+func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, imm_t* imm)
+{
+    if (parameters == NULL)
+    {
+        return NULL;
+    }
+
+    if (parameters->type != first)
+    {
+        while (parameters->next != NULL)
+        {
+            parameters = parameters->next;
+        }
+        printf("malloc\n");
+        parameters->next = malloc(sizeof(func_par_t));
+        if (parameters->next == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
+        else { parameters = parameters->next; }
+    }
+    
+    if (symbol == NULL && imm == NULL)
+    {
+        parameters->type = par_null;
+    }
+    else if (symbol != NULL && imm == NULL)
+    {
+        parameters->type = par_op;
+        parameters->op = symbol;
+    }
+    else if (symbol == NULL && imm != NULL)
+    {
+        parameters->type = par_imm;
+        parameters->imm = *imm;
+    }
+    return parameters;
+}
+
+
+void disposeParameters (func_par_t* parameters)
+{
+    
+    func_par_t* this;
+    while (parameters != NULL)
+    {
+        printf("dispose\n");
+        this = parameters;
+        parameters = parameters->next;
+        free(this);
+    }
+}

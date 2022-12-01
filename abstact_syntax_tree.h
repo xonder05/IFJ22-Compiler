@@ -35,9 +35,10 @@ typedef struct expression_subtree{
 
 
 typedef struct func_parameters{
-    enum {par_op, par_imm, par_null}type; //mozna by slo vyuzivat seznam typů z symbol_t
+    enum {first, par_op, par_imm, par_null}type;
     symbol_t *op;
     imm_t imm;
+    struct func_parameters *next;
 }func_par_t;
 
 //node data based on it's type
@@ -75,3 +76,7 @@ ast_t* printTree(ast_t *tree);
 
 exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_int, double* imm_float, Dyn_String* imm_string);
 
+
+func_par_t* parInit();
+func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, imm_t* imm);
+void disposeParameters (func_par_t* parameters);
