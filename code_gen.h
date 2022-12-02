@@ -2,12 +2,26 @@
 #include "scanner.h"
 #include "abstact_syntax_tree.h"
 
-// bool generate_operation(Token_type operator_f,char *first_operand,char *second_operand)
 
 //parametr strom
-int generate();
+int generate(ast_t *tree);
 
 //parametry strom, main_list,func_list
-int gen_from_ass();
+int gen_from_ass(ast_t *tree,inst_list_t *body_list,inst_list_t *func_list,int *if_count,var_generated_t *var_list);
 
-int generate_func(node_t *node, inst_list_t *func_list);
+int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generated_t *var_list);
+
+int generate_call_func(node_t *node, inst_list_t *main_body_list);
+
+int generate_call_func_write(node_t *node, inst_list_t *main_body_list);
+
+int generate_func_asign(node_t *node, inst_list_t *main_body_list,var_generated_t *var_list);
+
+
+int ev_expression(node_t *node, inst_list_t *main_body_list);
+
+int gen_assig_expression(node_t *node, inst_list_t *main_body_list,var_generated_t *var_list);
+
+int generate_if(node_t *node, inst_list_t *main_body_list,int *if_count,inst_list_t *func_list,var_generated_t *var_list);
+
+int generate_while(node_t *node, inst_list_t *main_body_list, inst_list_t *func_list,var_generated_t *var_list,int *if_count);

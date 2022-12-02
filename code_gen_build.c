@@ -43,25 +43,71 @@ void instListInsertLast( inst_list_t *list, block_type type,Dyn_String *code)
     elem ->next = NULL;
 }
 
-void instInsertBeforeWhile( inst_list_t *list, inst_list_elem_ptr elem)
+// void instInsertBeforeWhile( inst_list_t *list, inst_list_elem_ptr elem)
+// {
+//     inst_list_elem_ptr tmp = list->last;
+//     // vracimse pred while
+//     while(tmp->type != while_loop_start && tmp != NULL)
+//     {
+//         tmp = tmp ->previous;
+//     }
+//     //chyba
+//     if(tmp == NULL)
+//     {
+//         return;
+//     }
+//     //insertu za tmp (tzn. pred while)
+//     elem ->previous = tmp;
+//     elem -> next = tmp ->next;
+//     tmp ->next = elem;
+//     elem ->next ->previous = elem;
+// }
+
+void instInsertBeforeWhile( inst_list_t *list, block_type type, Dyn_String *code)
 {
+
     inst_list_elem_ptr tmp = list->last;
-    // vracimse pred while
-    while(tmp->type != while_loop_start && tmp ->type != while_loop_body && tmp != NULL)
+    if(list ->first == NULL)
+	{
+        inst_list_elem_ptr elem = create_elem(type, code);
+		list ->first = elem;
+		list -> last = elem;
+		return;
+	}
+
+    while(tmp != NULL && tmp->type != while_loop_start)
     {
-        tmp = tmp ->previous;
+        tmp = tmp -> previous;
     }
-    //chyba
-    if(tmp == NULL)
+    
+    if(tmp == NULL)//nejseme ve while
     {
-        return;
+        instListInsertLast(list,type,code);
     }
-    //insertu za tmp (tzn. pred while)
-    elem ->previous = tmp;
-    elem -> next = tmp ->next;
-    tmp ->next = elem;
-    elem ->next ->previous = elem;
+    //nasli jsme while start
+    else
+    {
+        inst_list_elem_ptr elem = create_elem(type, code);
+        //kdyz je while prvni v listu
+        if(tmp->previous == NULL)
+        {
+            elem->next=list->first;
+            tmp ->previous = elem;
+            list -> first = elem;
+        }        
+        else//jinak
+        {
+            elem ->next = tmp;
+            elem ->previous= tmp ->previous;
+            elem -> previous ->next = elem;
+            tmp ->previous = elem;
+        }
+    }
+
+
+    return;   
 }
+
 
 void isntListDispose(inst_list_t *list)
 {
@@ -337,6 +383,181 @@ LABEL $chr_fine\n\
 INT2CHAR LF@%retval1 LF@param1\n\
 #body\n\
 POPFRAME\n\
+RETURN\n"
+
+#define DEF_CONC "label $&conc\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+POPS LF@&op2\n\
+POPS LF@&op1\n\
+CONCAT LF@&op1 LF@&op1 LF@&op2\n\
+PUSHS LF@&op1\n\
+POPFRAME\n\
+RETURN\n"
+
+#define DEF_EQUAL_TYPE "label $&equal_type\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+POPS LF@&op2\n\
+POPS LF@&op1\n\
+TYPE LF@&op1 LF@&op1\n\
+TYPE LF@&op2 LF@&op2\n\
+EQ LF@&op1 LF@&op1 LF@&op2\n\
+PUSHS LF@&op1\n\
+POPFRAME\n\
+RETURN\n"
+
+#define DEF_NOT_EQUAL_TYPE "label $&not_equal_type\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+POPS LF@&op2\n\
+POPS LF@&op1\n\
+TYPE LF@&op1 LF@&op1\n\
+TYPE LF@&op2 LF@&op2\n\
+EQ LF@&op1 LF@&op1 LF@&op2\n\
+NOT LF@&op1 LF@&op1\n\
+PUSHS LF@&op1\n\
+POPFRAME\n\
+RETURN\n"
+
+#define DEF_GREATER_EQUAL "label $&greater_equal\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+DEFVAR LF@&bool1\n\
+DEFVAR LF@&bool2\n\
+POPS LF@&op2\n\
+POPS LF@&op1\n\
+GT LF@&bool1 LF@&op1 LF@&op2 \n\
+EQ LF@&bool2 LF@&op1 LF@&op2 \n\
+OR LF@&bool1 LF@&bool1 LF@&bool2 \n\
+PUSHS LF@&bool1\n\
+POPFRAME\n\
+RETURN\n"
+
+#define DEF_LESSER_EQUAL "label $&lesser_equal\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+DEFVAR LF@&bool1\n\
+DEFVAR LF@&bool2\n\
+POPS LF@&op2\n\
+POPS LF@&op1\n\
+LT LF@&bool1 LF@&op1 LF@&op2 \n\
+EQ LF@&bool2 LF@&op1 LF@&op2 \n\
+OR LF@&bool1 LF@&bool1 LF@&bool2 \n\
+PUSHS LF@&bool1\n\
+POPFRAME\n\
+RETURN\n"
+
+#define DEF_IF_TO_RET "label $&ev_if_to_ret\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&typ1\n\
+DEFVAR LF@&bool1\n\
+MOVE LF@&bool1 bool@false\n\
+DEFVAR LF@%retval1\n\
+POPS LF@&op1\n\
+TYPE LF@&typ1 LF@&op1 \n\
+\n\
+JUMPIFEQ $&ev_if_to_ret_int LF@&typ1 string@int\n\
+JUMPIFEQ $&ev_if_to_ret_string LF@&typ1 string@string\n\
+JUMPIFEQ $&ev_if_to_ret_nil LF@&typ1 string@nil\n\
+JUMPIFEQ $&ev_if_to_ret_bool LF@&typ1 string@bool\n\
+#kdyz float tak chyba\n\
+EXIT int@7\n\
+\n\
+label $&ev_if_to_ret_int\n\
+JUMPIFEQ $&ev_if_to_ret_end_false LF@&op1 int@0\n\
+JUMP $&ev_if_to_ret_end_true\n\
+\n\
+label $&ev_if_to_ret_string\n\
+JUMPIFEQ $&ev_if_to_ret_end_false LF@&op1 string@0\n\
+JUMPIFEQ $&ev_if_to_ret_end_false LF@&op1 string@\n\
+JUMP $&ev_if_to_ret_end_true\n\
+\n\
+label $&ev_if_to_ret_nil\n\
+JUMP $&ev_if_to_ret_end_false\n\
+\n\
+label $&ev_if_to_ret_bool\n\
+JUMPIFEQ $&ev_if_to_ret_end_false LF@&op1 bool@false\n\
+JUMP $&ev_if_to_ret_end_true\n\
+\n\
+label $&ev_if_to_ret_end_true\n\
+MOVE LF@&bool1 bool@true\n\
+label $&ev_if_to_ret_end_false\n\
+MOVE LF@%retval1 LF@&bool1\n\
+POPFRAME\n\
+RETURN\n"
+
+#define DEF_CONVERT_FOR_DIV "label $&convert_for_div\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+POPS LF@&op1\n\
+POPS LF@&op2\n\
+INT2FLOAT LF@&op2 LF@&op2 \n\
+INT2FLOAT LF@&op1 LF@&op1 \n\
+PUSHS LF@&op2\n\
+PUSHS LF@&op1\n\
+POPFRAME\n\
+RETURN\n"
+
+#define DEF_CONVERT "label $&convert\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+DEFVAR LF@&type1\n\
+DEFVAR LF@&type2\n\
+POPS LF@&op1\n\
+POPS LF@&op2\n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+#v budoucnu mozna pridat float na string operace etc.\n\
+#stejne typ jsou\n\
+JUMPIFEQ $&end_convert LF@&type1 LF@&type2\n\
+#nejsou stejneho typu\n\
+\n\
+JUMPIFEQ $&op2nastring LF@&type1 string@string\n\
+JUMPIFEQ $&op1nastring LF@&type2 string@string\n\
+JUMPIFEQ $&op2nafloat LF@&type1 string@float\n\
+JUMPIFEQ $&op1nafloat LF@&type2 string@float\n\
+#JUMPIFEQ $&op1nafloat LF@&type1 string@bool\n\
+#JUMPIFEQ $&op1nafloat LF@&type2 string@bool\n\
+#nejakej error\n\
+EXIT int@7\n\
+\n\
+LABEL $&op1nafloat\n\
+INT2FLOAT LF@&op1 LF@&op1\n\
+JUMP $&end_convert\n\
+\n\
+LABEL $&op2nafloat\n\
+INT2FLOAT LF@&op2 LF@&op2\n\
+JUMP $&end_convert\n\
+\n\
+LABEL $&op1nastring\n\
+INT2CHAR LF@&op1 LF@&op1\n\
+JUMP $&end_convert\n\
+\n\
+LABEL $&op2nastring\n\
+INT2CHAR LF@&op2 LF@&op2\n\
+JUMP $&end_convert\n\
+\n\
+LABEL $&end_convert\n\
+PUSHS LF@&op2\n\
+PUSHS LF@&op1\n\
+POPFRAME\n\
 RETURN\n\
 ############################### BUILT_IN ###############################\n"
 
@@ -391,8 +612,110 @@ void def_built_in(inst_list_t *list)
     instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
     dyn_string_clear(string);
 
+    dyn_string_add_string(string,DEF_CONC);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
 
+    dyn_string_add_string(string,DEF_EQUAL_TYPE);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
+
+    dyn_string_add_string(string,DEF_NOT_EQUAL_TYPE);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
+
+    dyn_string_add_string(string,DEF_GREATER_EQUAL);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
+
+    dyn_string_add_string(string,DEF_LESSER_EQUAL);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
+
+    dyn_string_add_string(string,DEF_IF_TO_RET);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
+
+    dyn_string_add_string(string,DEF_CONVERT_FOR_DIV);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
+
+
+    dyn_string_add_string(string,DEF_CONVERT);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
 
     dyn_string_free(string);
     dyn_string_free(empty);
+}
+
+
+void var_generated_init(var_generated_t *list)
+{
+    list->first = NULL;
+}
+
+var_gen_elem_ptr var_create_elem(Dyn_String *code)
+{
+    var_gen_elem_ptr elem = malloc(sizeof(struct var_gen_elem));
+
+    Dyn_String *string = dyn_string_init();
+
+
+    dyn_string_add_string(string,code->string);
+
+    // elem->type = null;
+    elem->code = string;
+    elem->next = NULL;
+    return elem;
+}
+
+void varListInsertLast( var_generated_t *list, Dyn_String *code)
+{
+    var_gen_elem_ptr elem = var_create_elem(code);
+
+
+	if(list ->first == NULL)
+	{
+		list ->first = elem;
+		return;
+	}
+    elem ->next = NULL;
+    // elem->type = typ;
+    var_gen_elem_ptr tmp = list->first;
+    while(tmp->next != NULL)
+    {
+        tmp = tmp ->next;
+    }
+    tmp->next = elem;
+}
+void varListDispose(var_generated_t *list)
+{
+    if(list->first == NULL)
+    {
+        return;
+    }
+    var_gen_elem_ptr elem = list ->first;
+    var_gen_elem_ptr next;
+    while(elem != NULL)
+    {
+        next = elem ->next;
+        dyn_string_free(elem->code);
+        free(elem);
+        elem = next;
+    }
+    list->first = NULL;
+}
+bool varListFind(var_generated_t *list,Dyn_String *name)
+{
+    var_gen_elem_ptr elem = list ->first;
+    while(elem != NULL)
+    {
+        if(dyn_string_equal(elem->code,name))
+        {
+            return true;
+        }
+        elem = elem ->next;
+    }
+    return false;
 }
