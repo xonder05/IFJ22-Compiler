@@ -1,10 +1,10 @@
 CC = gcc
-CFLAGS=-std=c11 -Wall -Wextra -pedantic -fcommon -g -fsanitize=address -O0 
-LDFLAGS+= -lm -fsanitize=address
+#CFLAGS=-std=c11 -Wall -Wextra -pedantic -fcommon -g -fsanitize=address -O0 
+#LDFLAGS+= -lm -fsanitize=address
 
 # PRED ODEVYDANIM ZMENIT NA:
-#CFLAGS=-std=c11 -Wall -Wextra -pedantic -fcommon -O2
-#LDFLAGS+= -lm
+CFLAGS=-std=c11 -Wall -Wextra -pedantic -fcommon -O2
+LDFLAGS+= -lm
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)

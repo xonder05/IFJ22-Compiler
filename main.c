@@ -1,15 +1,18 @@
 #include "parser.h"
-
+#include "abstact_syntax_tree.h"
+#include "symtable.h"
 #include <stdio.h>
 
 int main ()
 {
 
-    printf("test\n");
+    ast_t* AST = createRootNode(false);
+    symTable_t* Table = initSymTable();
+    parse(Table, AST);
 
-    parse();
+    printf("\nstart\n");
+    printTree(AST);
 
-    printf("test\n");
 
     return 0;
 }

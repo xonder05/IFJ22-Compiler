@@ -573,7 +573,7 @@ int i(stack_t *stack, stackItem_t input, bool *nextInput)
     }
 }
 
-ast_t* expresion(token_t scanner_result, symTable_t* table)
+ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
 {
     //printf("-----------------------------------------------------------------------------------------------------------------------------------\n");
     //printf("scanner result %d\n", scanner_result.type);
@@ -593,7 +593,6 @@ ast_t* expresion(token_t scanner_result, symTable_t* table)
     do{
         //printf("--------------new round--------------\n");
         //printf("input %d, stacktop %d\n", input.type, stacktop.type);
-        
         //printStack(stack);
         switch (stacktop.type)
         {
@@ -658,6 +657,7 @@ ast_t* expresion(token_t scanner_result, symTable_t* table)
             input = getNewInput(table);
         }
         stacktop = closestToTopNonTerminal(stack);
+        
 
     } while (input.type != END_OF_EXPRESSION || topStack(stack, 0).type != EXPRESSION || topStack(stack, 1).type != STARTEND);
 
@@ -666,6 +666,7 @@ ast_t* expresion(token_t scanner_result, symTable_t* table)
 
     stackItem_t item = topStack(stack, 0);
     ast_t* result;
+    
     switch (item.data->type)
     {
     case imm:
@@ -694,14 +695,25 @@ ast_t* expresion(token_t scanner_result, symTable_t* table)
 
     if (fail == true)
     {
+        if (sizeStack(stack) == 1 && stack->top->type == STARTEND)
+        {
+            
+            fprintf(stderr, "expression none\n");
+            disposeStack(stack);
+            *result_err = 0;
+            return NULL;
+        }
+
         fprintf(stderr, "expression fail\n");
         //printf("-----------------------------------------------------------------------------------------------------------------------------------\n");
+        *result_err = -1;
         return NULL;
     }
     else
     {
         printf("expression success\n");
         //printf("-----------------------------------------------------------------------------------------------------------------------------------\n");
+        *result_err = 1;
         return result;
     }
 

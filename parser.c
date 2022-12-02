@@ -3,6 +3,8 @@
 #include "expressions.h"
 #include "symtable.h"
 #include "error.h"
+#include "stack_ast.h"
+#include "abstact_syntax_tree.h"
 
 #include "testing_utils.h"
 
@@ -27,17 +29,17 @@ enum table_sintax
 //Forward declaration
 
 //Rules
-int rule_programm(symTable_t* table_sintax); //PROGRAM => TOKEN_START_TAG TOKEN_PROLOG COMMAND_OR_DECLARE_FUNCTION TOKEN_END_TAG
-int command_or_declare_function(symTable_t* Table); // COMMAND_OR_DECLARE_FUNCTION
-int delcare_function(symTable_t* Table); //rule num (DECLARE_FUNCTION)
-int command(symTable_t* Table); //COMMAND
-int command_variable(symTable_t* Table); //Variable
-int command_if(symTable_t* Table);
-int command_while(symTable_t* Table);
-int command_call_function(symTable_t* Table);
-int command_return(symTable_t* Table);
-int call_function_or_expresion(symTable_t* Table, VariableType_t* RetrunType); //CALL_FUNCTION_OR_EXPRESION
-int call_function(symTable_t* Table, VariableType_t* RetrunType);
+int rule_programm(symTable_t* table_sintax, stackAST_t* stack); //PROGRAM => TOKEN_START_TAG TOKEN_PROLOG COMMAND_OR_DECLARE_FUNCTION TOKEN_END_TAG
+int command_or_declare_function(symTable_t* Table, stackAST_t* stack); // COMMAND_OR_DECLARE_FUNCTION
+int delcare_function(symTable_t* Table, stackAST_t* stack); //rule num (DECLARE_FUNCTION)
+int command(symTable_t* Table, stackAST_t* stack); //COMMAND
+int command_variable(symTable_t* Table, stackAST_t* stack); //Variable
+int command_if(symTable_t* Table, stackAST_t* stack);
+int command_while(symTable_t* Table, stackAST_t* stack);
+int command_call_function(symTable_t* Table, stackAST_t* stack);
+int command_return(symTable_t* Table, stackAST_t* stack);
+int call_function_or_expresion(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* stack); //CALL_FUNCTION_OR_EXPRESION
+int call_function(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* stack);
 int parametrs(symTable_t* Table, argumentsOfFunction_t* Arguments);
 int term(symTable_t* Table, argumentsOfFunction_t* Arguments);
 int term_without_epsilon();
@@ -57,13 +59,29 @@ int func_type();
 
 
 
-int parse()
+int parse(symTable_t* Table, ast_t* AST)
 {
-    //Prepare 
-    symTable_t* Table = initSymTable();
     //insert premade function
+
+
+    if (AST == NULL)
+    {
+        freeSymTable(Table);
+        disposeTree(AST);
+        call_error(OTHERS_ERROR);
+    }
+
     if (insertPremadeFunction(Table) == false)
     {
+        disposeTree(AST);
+        freeSymTable(Table);
+        call_error(OTHERS_ERROR);
+    }
+
+    stackAST_t stack = initStackAST();
+    if (pushStackAST(&stack, AST) == -1)
+    {
+        disposeTree(AST);
         freeSymTable(Table);
         call_error(OTHERS_ERROR);
     }
@@ -72,7 +90,7 @@ int parse()
     scanner_result_is_processed = false;
     
     //Rule PROGRAM
-    if (rule_programm(Table) == -1)
+    if (rule_programm(Table, &stack) == -1)
     {
         printf("fail\n");
         exit(-1);
@@ -82,11 +100,10 @@ int parse()
     //check if all function is defined
     if (isAllFunctionDefined(Table) == false)
     {
+        disposeTree(AST);
         freeSymTable(Table);
         call_error(SEMANTIC_FUNC_ERROR);
     }
-
-    clearSymTable(Table);
 
     return 1;
 }
@@ -102,7 +119,7 @@ void get_unprocessed_token()
 }
 
 //PROGRAM => TOKEN_PROLOG COMMAND_OR_DECLARE_FUNCTION TOKEN_END_TAG
-int rule_programm(symTable_t* Table)
+int rule_programm(symTable_t* Table, stackAST_t* stack)
 {
     printf("rule_program\n");
 
@@ -116,8 +133,10 @@ int rule_programm(symTable_t* Table)
     }
     scanner_result_is_processed = true;
 
+    stack->top->LastCommand->thiscommand.prologSuccess = true;
+
     //call Rule COMMAND_OR_DECLARE_FUNCTION
-    if(command_or_declare_function(Table) != SUCCESS)
+    if(command_or_declare_function(Table,stack) != SUCCESS)
     {
         return -1;
     }
@@ -135,14 +154,14 @@ int rule_programm(symTable_t* Table)
     return 1;
 }
 
-int command_or_declare_function(symTable_t* Table)
+int command_or_declare_function(symTable_t* Table, stackAST_t* stack)
 {
     printf("comman_or_declare\n");
 
-    int result = delcare_function(Table);
+    int result = delcare_function(Table, stack);
 
     if (result == SUCCESS)
-        return command_or_declare_function(Table);
+        return command_or_declare_function(Table, stack);
 
     if (result == FIAL_IN_MIDDLE)
     {
@@ -151,10 +170,10 @@ int command_or_declare_function(symTable_t* Table)
         call_error(SYNTAX_ERROR);
     }
 
-    result = command(Table);
+    result = command(Table, stack);
 
     if (result == SUCCESS)
-        return command_or_declare_function(Table);
+        return command_or_declare_function(Table, stack);
     else if (result == FIAL_IN_MIDDLE)
         return FIAL_IN_MIDDLE;
 
@@ -163,7 +182,7 @@ int command_or_declare_function(symTable_t* Table)
 }
 
 
-int delcare_function(symTable_t* Table)
+int delcare_function(symTable_t* Table, stackAST_t* stack)
 {
     printf("declare_func\n");
     //Keywor func
@@ -179,7 +198,6 @@ int delcare_function(symTable_t* Table)
         return FAIL_IN_BEGIN;
     }
     scanner_result_is_processed = true;
-
 
     //ID_OF_FUNC
     get_unprocessed_token();
@@ -217,6 +235,7 @@ int delcare_function(symTable_t* Table)
         freeSymTable(Table);
         call_error(OTHERS_ERROR);
     }
+
 
     //(
     get_unprocessed_token();
@@ -317,8 +336,22 @@ int delcare_function(symTable_t* Table)
 
     scanner_result_is_processed = true;
 
+    ast_t* StartOfFunc = createRootNode(false);
+    if (StartOfFunc == NULL)
+    {
+        exit(-1);
+    }
+    ast_t* NewFuncAST = createDeclareFuncNode(NewFunction, StartOfFunc);
+    if (NewFuncAST == NULL)
+    {
+        exit(-1);
+    }
+
+    addNextCommandToTop(stack, NewFuncAST);
+    pushStackAST(stack, StartOfFunc);
+
     //COMMAND
-    if(command(Table) == FIAL_IN_MIDDLE)
+    if(command(Table, stack) == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
     }
@@ -333,6 +366,8 @@ int delcare_function(symTable_t* Table)
 
     scanner_result_is_processed = true;
 
+    popStackAST(stack);
+
     if (NewFunction->info.function.returnType != NULL_TYPE && NewFunction->info.function.haveReturn == false)
     {
         freeSymTable(Table);
@@ -345,16 +380,16 @@ int delcare_function(symTable_t* Table)
     return 1;
 }
 
-int command(symTable_t* Table)
+int command(symTable_t* Table, stackAST_t* stack)
 {
     printf("command\n");
     int result;
 
     //Variable
-    result = command_variable(Table);
+    result = command_variable(Table, stack);
     if (result == 1)
     {
-        result = command(Table);
+        result = command(Table, stack);
         return result != FIAL_IN_MIDDLE ? SUCCESS : result;
     }
 
@@ -365,10 +400,10 @@ int command(symTable_t* Table)
     }
 
     //If
-    result = command_if(Table);
+    result = command_if(Table,stack);
     if (result == 1)
     {
-        result = command(Table);
+        result = command(Table, stack);
         return result != FIAL_IN_MIDDLE ? SUCCESS : result;
     }
 
@@ -379,10 +414,10 @@ int command(symTable_t* Table)
     }
 
     //While
-    result = command_while(Table);
+    result = command_while(Table, stack);
     if (result == 1)
     {
-        result = command(Table);
+        result = command(Table, stack);
         return result != FIAL_IN_MIDDLE ? SUCCESS : result;
     }
 
@@ -393,10 +428,10 @@ int command(symTable_t* Table)
     }
 
     //Call function
-    result = command_call_function(Table);
+    result = command_call_function(Table, stack);
     if (result == 1)
     {
-        result = command(Table);
+        result = command(Table, stack);
         return result != FIAL_IN_MIDDLE ? SUCCESS : result;
     }
 
@@ -407,10 +442,10 @@ int command(symTable_t* Table)
     }
 
     //return
-    result = command_return(Table);
+    result = command_return(Table, stack);
     if (result == 1)
     {
-        result = command(Table);
+        result = command(Table, stack);
         return result != FIAL_IN_MIDDLE ? SUCCESS : result;
     }
 
@@ -424,7 +459,7 @@ int command(symTable_t* Table)
     return FAIL_IN_BEGIN;
 }
 //TOKEN_VAR_ID TOKEN_EQUAL CALL_FUNCTION_OR_EXPRESION TOKEN_SEMICOLON COMMAND
-int command_variable(symTable_t* Table)
+int command_variable(symTable_t* Table, stackAST_t* stack)
 {
     printf("variable\n");
     //TOKEN_VAR_ID
@@ -434,9 +469,6 @@ int command_variable(symTable_t* Table)
         return FAIL_IN_BEGIN;
     }
     scanner_result_is_processed = true;
-
-    //SymTable: check if var is not in table
-    //create info in table
 
     symbol_t* NewVar = findSymTableInCurentConxtext(Table, scanner_result.string);
 
@@ -452,6 +484,14 @@ int command_variable(symTable_t* Table)
         insertSymTable(Table, NewVar);
     }
 
+    ast_t* NewAssiamnet = createAssigmentFuncNode(NewVar, NULL);
+    if (NewAssiamnet == NULL)
+    {
+        exit(-1);
+    }
+
+    addNextCommandToTop(stack, NewAssiamnet);
+
     //TOKEN_EQUAL
     get_unprocessed_token();
     if (scanner_result.type != TOKEN_EQUAL)
@@ -462,7 +502,7 @@ int command_variable(symTable_t* Table)
 
     //CALL_FUNCTION_OR_EXPRESION
     VariableType_t ReturnType = ERROR_TYPE;
-    if (call_function_or_expresion(Table, &ReturnType) != 1) //???
+    if (call_function_or_expresion(Table, &ReturnType, stack) != 1) //???
     {
         return FIAL_IN_MIDDLE;
     }
@@ -482,7 +522,7 @@ int command_variable(symTable_t* Table)
 }
 
 //KEYWORD_IF TOKEN_L_PAR EXPRESSION TOKEN_R_PAR TOKEN_L_BRAC COMMAND TOKEN_R_BRAC KEYWORD_ELSE TOKEN_L_BRAC COMMAND TOKEN_R_BRAC COMMAND
-int command_if(symTable_t* Table)
+int command_if(symTable_t* Table, stackAST_t* stack)
 {
     printf("if\n");
     //KEYWORD_IF
@@ -507,20 +547,33 @@ int command_if(symTable_t* Table)
     scanner_result_is_processed = true;
     
     //EXPRESSION
-    if (expresion(scanner_result, Table ) != SUCCESS)
+    int result = 0;
+    ast_t* If_Exp = expresion(scanner_result, Table, &result);
+    if (result != SUCCESS)
     {
         return FIAL_IN_MIDDLE;
     }
 
-    //EXPRESION!!!
-    // //TOKEN_R_PAR
-    // get_unprocessed_token();
-    // if(scanner_result.type != TOKEN_R_PAR)
-    // {
-    //     return FIAL_IN_MIDDLE;
-    // }
-    // scanner_result_is_processed = true;
+    ast_t* TrueBlock = createRootNode(false);
+    if (TrueBlock == NULL)
+    {
+        exit(-1);
+    }
+    ast_t* FalseBlock = createRootNode(false);
+    if (FalseBlock == NULL)
+    {
+        exit(-1);
+    }
 
+    ast_t* If_Command = createIfNode(If_Exp, TrueBlock, FalseBlock);
+    if (If_Command == NULL)
+    {
+        exit(-1);
+    }
+
+    addNextCommandToTop(stack, If_Command);
+
+    pushStackAST(stack, TrueBlock);
     //TOKEN_L_BRAC
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_L_BRAC)
@@ -530,12 +583,11 @@ int command_if(symTable_t* Table)
     scanner_result_is_processed = true;
 
     //COMMAND 
-    if(command(Table) == FIAL_IN_MIDDLE)
+    if(command(Table, stack) == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
     }
 
-    printf("Kek\n");
     //TOKEN_R_BRAC
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_R_BRAC)
@@ -543,6 +595,8 @@ int command_if(symTable_t* Table)
         return FIAL_IN_MIDDLE;
     }
     scanner_result_is_processed = true;
+
+    popStackAST(stack);
 
     //KEYWORD_ELSE 
     get_unprocessed_token();
@@ -556,6 +610,8 @@ int command_if(symTable_t* Table)
     }
     scanner_result_is_processed = true;
     
+    pushStackAST(stack, FalseBlock);
+
     //TOKEN_L_BRAC 
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_L_BRAC)
@@ -565,7 +621,7 @@ int command_if(symTable_t* Table)
     scanner_result_is_processed = true;
 
     //COMMAND 
-    if(command(Table) == FIAL_IN_MIDDLE)
+    if(command(Table, stack) == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
     }
@@ -578,11 +634,13 @@ int command_if(symTable_t* Table)
     }
     scanner_result_is_processed = true;
 
+    popStackAST(stack);
+
     return SUCCESS;
 }
 
 //KEYWORD_WHILE TOKEN_L_PAR EXPRESSION TOKEN_R_PAR TOKEN_L_BRAC COMMAND TOKEN_R_BRAC COMMAND
-int command_while(symTable_t* Table)
+int command_while(symTable_t* Table, stackAST_t* stack)
 {
     printf("while\n");
     // KEYWORD_WHILE
@@ -606,25 +664,28 @@ int command_while(symTable_t* Table)
     scanner_result_is_processed = true; 
     
     
-        //get_unprocessed_token();
-        print_token(&scanner_result);
     //  EXPRESSION 
-    if (expresion(scanner_result, Table) != SUCCESS)
+    int result = 0;
+    ast_t* While_Exp = expresion(scanner_result, Table, &result);
+    if (result != SUCCESS)
     {
-        get_unprocessed_token();
-        print_token(&scanner_result);
         return FIAL_IN_MIDDLE;
     }
 
-    //EXPRESION !!!
-    // //  TOKEN_R_PAR
-    // get_unprocessed_token();
-    // if(scanner_result.type != TOKEN_R_PAR)
-    // {
-    //     return FIAL_IN_MIDDLE;
-    // }
-    // scanner_result_is_processed = true; 
+    ast_t* WhileBlock = createRootNode(false);
+    if (WhileBlock == NULL)
+    {
+        exit(-1);
+    }
 
+    ast_t* While_Command = createWhileNode(While_Exp, WhileBlock);
+    if (While_Command == NULL)
+    {
+        exit(-1);
+    }
+    addNextCommandToTop(stack, While_Command);
+
+    pushStackAST(stack, WhileBlock);
     //  TOKEN_L_BRAC
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_L_BRAC)
@@ -634,7 +695,7 @@ int command_while(symTable_t* Table)
     scanner_result_is_processed = true; 
 
     //  COMMAND 
-    if(command(Table) == FIAL_IN_MIDDLE)
+    if(command(Table, stack) == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
     }
@@ -648,15 +709,17 @@ int command_while(symTable_t* Table)
     }
     scanner_result_is_processed = true; 
 
+    popStackAST(stack);
+
     return SUCCESS;
 }
 // CALL_FUNCTION TOKEN_SEMICOLON
-int command_call_function(symTable_t* Table)
+int command_call_function(symTable_t* Table, stackAST_t* stack)
 {
     printf("comand_call_func\n");
     // CALL_FUNCTION 
     VariableType_t ReturnType = ERROR_TYPE;
-    int result = call_function(Table, &ReturnType);
+    int result = call_function(Table, &ReturnType, stack);
     
     
     if (result != SUCCESS)
@@ -676,7 +739,7 @@ int command_call_function(symTable_t* Table)
 }
 
 // KEYWORD_RETURN EXPRESSION TOKEN_SEMICOLON COMMAND
-int command_return(symTable_t* Table)
+int command_return(symTable_t* Table, stackAST_t* stack)
 {
     printf("retrun\n");
     // KEYWORD_RETURN
@@ -692,15 +755,16 @@ int command_return(symTable_t* Table)
     scanner_result_is_processed = true; 
 
     //  EXPRESSION
-    int result = expresion(scanner_result, Table);
+    int result = 0;
+    ast_t* Return_Exp = expresion(scanner_result, Table, &result);
     if (result == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
     }
-
     if (Table->CurentContext != NULL)
     {
         symbol_t* Func = findSymTable(Table, Table->CurentContext, NULL);
+        
         if (Func == NULL)
         {
             freeSymTable(Table);
@@ -710,7 +774,6 @@ int command_return(symTable_t* Table)
         {
             if (Func->info.function.returnType != NULL_TYPE)
             {
-                printf("KEK\n\n");
                 freeSymTable(Table);
                 call_error(SEMANTIC_PARAM_ERROR);
             }
@@ -728,7 +791,7 @@ int command_return(symTable_t* Table)
             Func->info.function.haveReturn = true;
         }
     }
- 
+
     
     //  TOKEN_SEMICOLON
     get_unprocessed_token();
@@ -741,18 +804,33 @@ int command_return(symTable_t* Table)
     return SUCCESS;
 }
 
-int call_function_or_expresion(symTable_t* Table, VariableType_t* RetrunType)
+int call_function_or_expresion(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* stack)
 {
     printf("call_or_exp\n");
-    if(call_function(Table, RetrunType) != SUCCESS)
+    if(call_function(Table, RetrunType, stack) != SUCCESS)
     {
-        return expresion(scanner_result, Table);
+        int result = 0;
+        ast_t* Exp = expresion(scanner_result, Table, &result);
+        if (Exp == NULL)
+        {
+            exit(-1);
+        }
+
+        if (stack->top->LastCommand->type == assigment_func 
+        && stack->top->LastCommand->thiscommand.assigment_func.func == NULL)
+        {
+            stack->top->LastCommand->type = assigment_expression;
+            stack->top->LastCommand->thiscommand.assigment_expression.target =
+            stack->top->LastCommand->thiscommand.assigment_func.target;
+            stack->top->LastCommand->thiscommand.assigment_expression.expression = Exp;
+        }
+        return result;
     }
     return SUCCESS;
 }
 
 // TOKEN_FUNC_ID TOKEN_L_PAR TERM TOKEN_R_PAR 
-int call_function(symTable_t* Table, VariableType_t* RetrunType)
+int call_function(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* stack)
 {
     printf("call\n");
     // TOKEN_FUNC_ID
@@ -815,6 +893,16 @@ int call_function(symTable_t* Table, VariableType_t* RetrunType)
     }
 
     *RetrunType = NewFunc->info.function.returnType;
+
+    if (stack->top->LastCommand->type == assigment_func)
+    {
+        if (stack->top->LastCommand->thiscommand.assigment_func.func == NULL)
+        {
+            stack->top->LastCommand->thiscommand.assigment_func.func = NewFunc;
+        }
+    }
+    //Arguments to ast
+
     return SUCCESS;
 }
 
