@@ -514,7 +514,7 @@ int generate_func_asign(node_t *node, inst_list_t *main_body_list,var_generated_
     }
     dyn_string_add_string(assign,var_name->string);
     dyn_string_add_char(assign,' ');
-    dyn_string_add_string(assign,"LF@%retval1\n");
+    dyn_string_add_string(assign,"TF@%retval1\n");
     dyn_string_free(var_name);
 
 
@@ -597,6 +597,7 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
     case Plus:
     case Minus:
     case Multiply:
+    case Dot:
     case Divide:
     case Equal:
     case NotEqual:
@@ -844,7 +845,7 @@ int generate_if(node_t *node, inst_list_t *main_body_list,int *if_count,inst_lis
 
     Dyn_String *if_code = dyn_string_init();
     Dyn_String *label_base_name = dyn_string_init();
-    dyn_string_add_string(label_base_name,"$if\n");
+    dyn_string_add_string(label_base_name,"$if");
     unsigned_int_to_string(label_base_name,*if_count);
 
     error_code = ev_expression(&(node->if_statement.expression->thiscommand),main_body_list);
@@ -861,7 +862,7 @@ int generate_if(node_t *node, inst_list_t *main_body_list,int *if_count,inst_lis
     dyn_string_add_string(if_code,"JUMPIFEQ ");
     dyn_string_add_string(if_code,label_base_name->string);
     dyn_string_add_string(if_code,"true ");
-    dyn_string_add_string(if_code,"LF@%retval1 bool@true\n");
+    dyn_string_add_string(if_code,"TF@%retval1 bool@true\n");
     //false vetev
     //
     error_code = gen_from_ass(node->if_statement.false_block,main_body_list,func_list,if_count,var_list);
@@ -937,7 +938,7 @@ int generate_while(node_t *node, inst_list_t *main_body_list, inst_list_t *func_
     dyn_string_add_string(while_code,"JUMPIFNEQ ");
     dyn_string_add_string(while_code,label_base_name->string);
     dyn_string_add_string(while_code,"end ");
-    dyn_string_add_string(while_code,"LF@%retval1 bool@true\n");
+    dyn_string_add_string(while_code,"TF@%retval1 bool@true\n");
 
 
     //BODY

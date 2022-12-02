@@ -390,12 +390,20 @@ CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@&op1\n\
 DEFVAR LF@&op2\n\
+DEFVAR LF@&type1\n\
+DEFVAR LF@&type2\n\
 POPS LF@&op2\n\
 POPS LF@&op1\n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+JUMPIFNEQ $&conc_end LF@&type1 LF@&type2\n\
+JUMPIFNEQ $&conc_end LF@&type1 string@string\n\
 CONCAT LF@&op1 LF@&op1 LF@&op2\n\
 PUSHS LF@&op1\n\
 POPFRAME\n\
-RETURN\n"
+RETURN\n\
+label $&conc_end\n\
+EXIT int@7\n"
 
 #define DEF_EQUAL_TYPE "label $&equal_type\n\
 CREATEFRAME\n\
@@ -529,8 +537,9 @@ TYPE LF@&type2 LF@&op2\n\
 JUMPIFEQ $&end_convert LF@&type1 LF@&type2\n\
 #nejsou stejneho typu\n\
 \n\
-JUMPIFEQ $&op2nastring LF@&type1 string@string\n\
-JUMPIFEQ $&op1nastring LF@&type2 string@string\n\
+#uz nepravadim string na nic\n\
+#JUMPIFEQ $&op2nastring LF@&type1 string@string\n\
+#JUMPIFEQ $&op1nastring LF@&type2 string@string\n\
 JUMPIFEQ $&op2nafloat LF@&type1 string@float\n\
 JUMPIFEQ $&op1nafloat LF@&type2 string@float\n\
 #JUMPIFEQ $&op1nafloat LF@&type1 string@bool\n\
