@@ -272,11 +272,11 @@ void disposeTree(ast_t* tree)
     case expression:
         if(tree->thiscommand.expression.left != NULL)
         {
-            free(tree->thiscommand.expression.left);
+            diposeExpSubtree(tree->thiscommand.expression.left);
         }
         if(tree->thiscommand.expression.right != NULL)
         {
-            free(tree->thiscommand.expression.right);
+            diposeExpSubtree(tree->thiscommand.expression.right);
         }
         if (tree->nextcommand != NULL)
         {
@@ -334,6 +334,28 @@ exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_
         return NULL;
     }
     return tree;
+}
+
+
+void diposeExpSubtree(exp_subtree_t* tree)
+{
+    switch (tree->type)
+    {
+    case op: case imm: case nul: //simply frees the structure, 
+        free(tree);              //in case of op - the symtable record is not touched
+        break;
+    case exp:
+        if (tree->data.exp->thiscommand.expression.operator != SingleOp && tree->data.exp->thiscommand.expression.operator != Error)
+        {
+            diposeExpSubtree(tree->data.exp->thiscommand.expression.right);
+        }
+        diposeExpSubtree(tree->data.exp->thiscommand.expression.left);
+        free(tree);
+
+    default:
+        //shouldn't happen -- error
+        break;
+    }
 }
 
 func_par_t* parInit()

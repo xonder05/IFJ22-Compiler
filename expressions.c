@@ -1,5 +1,144 @@
 #include "expressions.h"
 
+
+VariableType_t convertImmTypeToVariableType(imm_type_t imm)
+{
+    VariableType_t output;
+    switch (imm)
+    {
+    case type_int:
+        output = INT_TYPE;
+        break;
+    case type_float:
+        output = FLOAT_TYPE;
+    break;
+    case type_string:
+        output = STRING_TYPE;
+    break;
+    
+    default:
+        output = ERROR_TYPE;
+        break;
+    }
+    return output;
+}
+
+
+VariableType_t semanticCheck(ast_t* tree)
+{
+    if (tree == NULL){fprintf(stderr, "tree is null\n"); return ERROR_TYPE; }
+
+    //only one operator
+    if (tree->thiscommand.expression.operator == SingleOp)
+    {
+        switch (tree->thiscommand.expression.left->type)
+        {
+        case op:
+            return tree->thiscommand.expression.left->data.op->info.variable.curentType;
+        case imm:
+            return convertImmTypeToVariableType(tree->thiscommand.expression.left->data.imm.type);
+        case nul:
+            return NULL_TYPE;
+        default:
+            return ERROR_TYPE;
+        }
+    }
+
+    //otherwise find the resulting type of left subtree
+    VariableType_t left;
+    switch (tree->thiscommand.expression.left->type)
+    {
+    case exp:
+        left = semanticCheck(tree->thiscommand.expression.left->data.exp); 
+        break;
+    case op:
+        left = tree->thiscommand.expression.left->data.op->info.variable.curentType;
+        break;
+    case imm:
+        left = convertImmTypeToVariableType(tree->thiscommand.expression.left->data.imm.type);
+        break;
+    case nul:
+        left = NULL_TYPE;
+        break;
+    default:
+        return ERROR_TYPE;
+        break;
+    }
+
+    //and resulting type of right subtree
+    VariableType_t right;
+    switch (tree->thiscommand.expression.right->type)
+    {
+    case exp:
+        right = semanticCheck(tree->thiscommand.expression.right->data.exp); 
+        break;
+    case op:
+        right = tree->thiscommand.expression.right->data.op->info.variable.curentType;
+        break;
+    case imm:
+        right = convertImmTypeToVariableType(tree->thiscommand.expression.right->data.imm.type);
+        break;
+    case nul:
+        right = NULL_TYPE;
+        break;
+    default:
+        return ERROR_TYPE;
+        break;
+    }
+
+    //if either of them returned error, do it too
+    if (left == ERROR_TYPE || right == ERROR_TYPE)
+    {
+        return ERROR_TYPE;
+    }
+
+    //based on the operator decide what to do
+    switch (tree->thiscommand.expression.operator)
+    {
+    case Plus: case Minus: case Multiply:
+        if ( (left == INT_TYPE && right == INT_TYPE) || (left == FLOAT_TYPE && right == FLOAT_TYPE) )
+        {
+            return left;
+        }
+        else if ( (left == INT_TYPE || right == INT_TYPE) && (left == FLOAT_TYPE || right == FLOAT_TYPE) )
+        {
+            return FLOAT_TYPE;
+        }
+        else
+        {
+            return ERROR_TYPE;
+        }
+        break;
+
+    case Divide:
+        if ( (left == INT_TYPE || left == FLOAT_TYPE) && (right == INT_TYPE || right == FLOAT_TYPE) )
+        {
+            return FLOAT_TYPE;
+        }
+        else
+        {
+            return ERROR_TYPE;
+        }
+        break;
+
+    case Dot:
+        if ( (left == STRING_TYPE || left == INT_TYPE || left == FLOAT_TYPE) && (right == STRING_TYPE || right == INT_TYPE || right == FLOAT_TYPE) )
+        {
+            return STRING_TYPE;
+        }
+        break;
+
+    case Equal: case NotEqual: case Greater: case Lesser: case GreaterEqual: case LesserEqual:
+    break;
+
+    default:
+        break;
+    }
+
+    return ERROR_TYPE;
+}
+
+
 operator convertInputCharsToOperator(InputChars input)
 {
         int output;
@@ -246,7 +385,7 @@ int reduce(stack_t *stack)
             return 1;
         } 
     }
-    else if (top.type == RPAR)
+    else if (top.type == RPAR) //STACK: ( -> E -> ) -> H
     {
         if (topStack(stack, 1).type == EXPRESSION && topStack(stack, 2).type == LPAR && topStack(stack,3).type == HANDLE)
         {
@@ -265,22 +404,24 @@ int reduce(stack_t *stack)
         }
 
     }
-    else if (top.type == EXPRESSION)
+    else if (top.type == EXPRESSION) //STACK: E -> OP -> E -> H
     {
-        if ( (topStack(stack, 1).type == PLUS || topStack(stack, 1).type == MINUS || topStack(stack, 1).type == MULTIPLY 
-        || topStack(stack, 1).type == DIVIDE || topStack(stack, 1).type == DOT 
-        || topStack(stack, 1).type == EQUAL || topStack(stack, 1).type == NOTEQUAL || topStack(stack, 1).type == GREATER 
-        || topStack(stack, 1).type == GREATER_EQUAL || topStack(stack, 1).type == LESSER || topStack(stack, 1).type == LESSER_EQUAL)
-        && topStack(stack, 2).type == EXPRESSION && topStack(stack,3).type == HANDLE)
+        InputChars i = topStack(stack, 1).type;
+        if ( (i == PLUS || i == MINUS || i == MULTIPLY || i == DIVIDE || i == DOT 
+            || i == EQUAL || i == NOTEQUAL || i == GREATER || i == GREATER_EQUAL || i == LESSER || i == LESSER_EQUAL)
+            && topStack(stack, 2).type == EXPRESSION && topStack(stack,3).type == HANDLE)
         {
             stackItem_t left = topStack(stack, 0);
             stackItem_t right = topStack(stack, 2);
             stackItem_t op = topStack(stack, 1);
+
             if (convertInputCharsToOperator(op.type) == -1) { fprintf(stderr, "convert fail\n"); exit(0);}
             ast_t* node = createExpressionNode(convertInputCharsToOperator(op.type), left.data, right.data);
+            
             stackItem_t item;
             item.type = EXPRESSION;
             item.data = createExpSubtree(NULL, node, NULL, NULL, NULL);
+            
             popStack(stack);
             popStack(stack);
             popStack(stack);
@@ -594,6 +735,7 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
         //printf("--------------new round--------------\n");
         //printf("input %d, stacktop %d\n", input.type, stacktop.type);
         //printStack(stack);
+
         switch (stacktop.type)
         {
         case STARTEND :
@@ -648,7 +790,7 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
 
         if (fail == true)
         {
-            break;
+            exit(0);
         }
 
         if (nextInput == true)
@@ -657,8 +799,6 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
             input = getNewInput(table);
         }
         stacktop = closestToTopNonTerminal(stack);
-        
-
     } while (input.type != END_OF_EXPRESSION || topStack(stack, 0).type != EXPRESSION || topStack(stack, 1).type != STARTEND);
 
 
@@ -689,6 +829,12 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
 
     //printTree(result);
 
+    if (semanticCheck(result) == ERROR_TYPE)
+    {
+        fprintf(stderr, "\nsemantic error\n\n");
+        return NULL;
+    }
+    printf("\nsemantic success\n\n");
 
 
     disposeStack(stack);
@@ -718,6 +864,7 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
     }
 
 }
+
 
 
 

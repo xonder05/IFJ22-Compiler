@@ -6,14 +6,8 @@
 typedef union node node_t;
 typedef struct abstactSyntaxTree ast_t;
 
-typedef enum{
-    root, assigment_expression, assigment_func, declare_func, if_statement, while_statement, expression, return_statement
-}nodeType;
 
-typedef enum {SingleOp, Plus, Minus, Multiply, Divide, Dot, Equal, NotEqual, Greater, Lesser, GreaterEqual, LesserEqual, Error = -1
-}operator;
-
-
+//immediate operands are stored directly in the syntax tree
 typedef enum {type_int, type_float, type_string}imm_type_t;
 typedef union imm_uni {
         long int type_int;
@@ -26,6 +20,7 @@ typedef struct immediate_operand{
 }imm_t;
 
 
+// subtree of an expression can consist of multiple different data types
 typedef struct expression_subtree{
     enum sub_tree_type {op, exp, imm, nul}type;
     union exp_sub_uni{
@@ -35,13 +30,18 @@ typedef struct expression_subtree{
     }data;
 }exp_subtree_t;
 
+// expression operators
+typedef enum {SingleOp, Plus, Minus, Multiply, Divide, Dot, Equal, NotEqual, Greater, Lesser, GreaterEqual, LesserEqual, Error = -1
+}operator;
 
+// list-like structure for storing funtion parameters
 typedef struct func_parameters{
     enum {first, par_op, par_imm, par_null}type;
     symbol_t *op;
     imm_t imm;
     struct func_parameters *next;
 }func_par_t;
+
 
 //node data based on it's type
 union node{
@@ -54,6 +54,10 @@ union node{
     struct {operator operator; exp_subtree_t *left; exp_subtree_t *right;} expression;
     struct {ast_t *expression;} return_statement;
 };
+
+//node type in abstract syntax tree
+typedef enum{ root, assigment_expression, assigment_func, declare_func, if_statement, while_statement, expression, return_statement
+}nodeType;
 
 struct abstactSyntaxTree{
     nodeType type;
@@ -78,9 +82,13 @@ void disposeTree(ast_t* tree);
 ast_t* printTree(ast_t *tree);
 
 
+
+// expression subtree operations
 exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_int, double* imm_float, Dyn_String* imm_string);
+void diposeExpSubtree(exp_subtree_t* tree);
 
 
+// operation with function parameters list
 func_par_t* parInit();
 func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, long int* int_input, double* float_input, Dyn_String* string_input);
 void disposeParameters (func_par_t* parameters);
