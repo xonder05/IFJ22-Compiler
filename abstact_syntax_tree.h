@@ -78,5 +78,5 @@ exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_
 
 
 func_par_t* parInit();
-func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, imm_t* imm);
+func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, long int* type_int, double* type_float, Dyn_String* string);
 void disposeParameters (func_par_t* parameters);

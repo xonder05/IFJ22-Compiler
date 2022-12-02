@@ -329,7 +329,6 @@ exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_
 
 func_par_t* parInit()
 {
-    printf("malloc\n");
     func_par_t *parameters = malloc(sizeof(func_par_t));
     if (parameters == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
     parameters->type = first;
@@ -337,7 +336,7 @@ func_par_t* parInit()
     return parameters;   
 }
 
-func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, imm_t* imm)
+func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, long int* int_input, double* float_input, Dyn_String* string_input)
 {
     if (parameters == NULL)
     {
@@ -350,25 +349,38 @@ func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, imm_t* imm)
         {
             parameters = parameters->next;
         }
-        printf("malloc\n");
         parameters->next = malloc(sizeof(func_par_t));
         if (parameters->next == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
         else { parameters = parameters->next; }
     }
     
-    if (symbol == NULL && imm == NULL)
+    if (symbol == NULL && int_input == NULL && float_input == NULL && string_input == NULL)
     {
         parameters->type = par_null;
     }
-    else if (symbol != NULL && imm == NULL)
+    else if (symbol != NULL && int_input == NULL && float_input == NULL && string_input == NULL)
     {
         parameters->type = par_op;
         parameters->op = symbol;
     }
-    else if (symbol == NULL && imm != NULL)
+    else if (symbol == NULL && (int_input != NULL || float_input != NULL || string_input != NULL))
     {
         parameters->type = par_imm;
-        parameters->imm = *imm;
+        if (int_input != NULL && float_input == NULL && string_input == NULL)
+        {
+            parameters->imm.type = type_int;
+            parameters->imm.data.type_int = *int_input;
+        }
+        else if (int_input == NULL && float_input != NULL && string_input == NULL)
+        {
+            parameters->imm.type = type_float;
+            parameters->imm.data.type_float = *float_input;
+        }
+        else if (int_input == NULL && float_input == NULL && string_input != NULL)
+        {
+            parameters->imm.type = type_string;
+            parameters->imm.data.type_string = string_input;
+        }
     }
     return parameters;
 }
@@ -380,9 +392,9 @@ void disposeParameters (func_par_t* parameters)
     func_par_t* this;
     while (parameters != NULL)
     {
-        printf("dispose\n");
         this = parameters;
         parameters = parameters->next;
         free(this);
     }
 }
+
