@@ -353,7 +353,7 @@ func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, long int* in
         if (parameters->next == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
         else { parameters = parameters->next; }
     }
-    
+    parameters->next = NULL;
     if (symbol == NULL && int_input == NULL && float_input == NULL && string_input == NULL)
     {
         parameters->type = par_null;
