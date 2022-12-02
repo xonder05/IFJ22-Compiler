@@ -78,6 +78,15 @@ ast_t* createExpressionNode(operator operator, exp_subtree_t *left, exp_subtree_
     return strom;
 }
 
+ast_t* createReturnNode(ast_t *expression)
+{
+    ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
+    if (strom == NULL) { fprintf(stderr, "mallock fail\n"); return NULL;}
+    strom->type = return_statement;
+    strom->nextcommand = NULL;
+    strom->thiscommand.return_statement.expression = expression;
+    return strom;
+}
 
 
 ast_t* printTree(ast_t *tree)

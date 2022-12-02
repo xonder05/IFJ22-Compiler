@@ -7,7 +7,7 @@ typedef union node node_t;
 typedef struct abstactSyntaxTree ast_t;
 
 typedef enum{
-    root, assigment_expression, assigment_func, declare_func, if_statement, while_statement, expression
+    root, assigment_expression, assigment_func, declare_func, if_statement, while_statement, expression, return_statement
 }nodeType;
 
 typedef enum {SingleOp, Plus, Minus, Multiply, Divide, Dot, Equal, NotEqual, Greater, Lesser, GreaterEqual, LesserEqual, Error = -1
@@ -22,8 +22,10 @@ typedef union imm_uni {
 }imm_uni_t;
 typedef struct immediate_operand{
     imm_type_t type;
-    imm_uni_t data;    
+    imm_uni_t data;
 }imm_t;
+
+
 typedef struct expression_subtree{
     enum sub_tree_type {op, exp, imm, nul}type;
     union exp_sub_uni{
@@ -50,6 +52,7 @@ union node{
     struct {ast_t *expression; ast_t *true_block; ast_t *false_block;} if_statement;
     struct {ast_t *expression; ast_t *while_block; } while_statement;
     struct {operator operator; exp_subtree_t *left; exp_subtree_t *right;} expression;
+    struct {ast_t *expression;} return_statement;
 };
 
 struct abstactSyntaxTree{
@@ -66,6 +69,7 @@ ast_t* createDeclareFuncNode(symbol_t* func_name, ast_t *func_body);
 ast_t* createIfNode(ast_t *expression, ast_t *true_block, ast_t *false_block);
 ast_t* createWhileNode(ast_t *expression, ast_t *while_block);
 ast_t* createExpressionNode(operator operator, exp_subtree_t *left, exp_subtree_t *right);  
+ast_t* createReturnNode(ast_t *expression);
 
 //dispose entire tree
 void disposeTree(ast_t* tree);
