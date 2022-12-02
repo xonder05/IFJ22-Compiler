@@ -10,7 +10,8 @@ int main ()
     symTable_t* Table = initSymTable();
     parse(Table, AST);
 
-    printf("\nstart\n");
+
+    printf("\n\nstart\n\n");
     printTree(AST);
 
 

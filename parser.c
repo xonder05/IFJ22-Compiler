@@ -790,7 +790,6 @@ int command_return(symTable_t* Table, stackAST_t* stack)
             Func->info.function.haveReturn = true;
         }
     }
-
     
     //  TOKEN_SEMICOLON
     get_unprocessed_token();
@@ -799,6 +798,13 @@ int command_return(symTable_t* Table, stackAST_t* stack)
         return FIAL_IN_MIDDLE;
     }
     scanner_result_is_processed = true; 
+
+    ast_t* Return_Command = createReturnNode(Return_Exp);
+    if(Return_Command == NULL)
+    {
+        exit(-1);
+    }
+    addNextCommandToTop(stack, Return_Command);
 
     return SUCCESS;
 }
