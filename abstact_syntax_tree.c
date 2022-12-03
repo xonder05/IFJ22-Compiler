@@ -3,7 +3,12 @@
 ast_t* createRootNode(bool prologSuccess)
 {
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
-    if (strom == NULL) { fprintf(stderr, "malloc fail\n"); return NULL;}
+    if (strom == NULL) 
+    { 
+        fprintf(stderr, "malloc fail\n"); 
+        return NULL;
+    }
+
     strom->type = root;
     strom->nextcommand = NULL;
     strom->thiscommand.prologSuccess = prologSuccess;
@@ -12,8 +17,20 @@ ast_t* createRootNode(bool prologSuccess)
 
 ast_t* createAssigmentExpNode(symbol_t* target, ast_t* expression)
 {
+    /*
+    if (target == NULL || expression == NULL)
+    {
+        return NULL;
+    }
+    */
+
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
-    if (strom == NULL) { fprintf(stderr, "mallock fail\n"); return NULL;}
+    if (strom == NULL) 
+    { 
+        fprintf(stderr, "mallock fail\n"); 
+        return NULL;
+    }
+
     strom->type = assigment_expression;
     strom->nextcommand = NULL;
     strom->thiscommand.assigment_expression.target = target;
@@ -23,8 +40,20 @@ ast_t* createAssigmentExpNode(symbol_t* target, ast_t* expression)
 
 ast_t* createAssigmentFuncNode(symbol_t* target, symbol_t* func)
 {
+    /*
+    if (target == NULL || func == NULL)
+    {
+        return NULL;
+    }
+    */
+
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
-    if (strom == NULL) { fprintf(stderr, "mallock fail\n"); return NULL;}
+    if (strom == NULL) 
+    { 
+        fprintf(stderr, "mallock fail\n"); 
+        return NULL;
+    }
+
     strom->type = assigment_func;
     strom->nextcommand = NULL;
     strom->thiscommand.assigment_func.target = target;
@@ -34,8 +63,20 @@ ast_t* createAssigmentFuncNode(symbol_t* target, symbol_t* func)
 
 ast_t* createDeclareFuncNode(symbol_t* func_name, ast_t *func_body)
 {
+    /*
+    if (func_name == NULL || func_body == NULL)
+    {
+        return NULL;
+    }
+    */
+
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
-    if (strom == NULL) { fprintf(stderr, "mallock fail\n"); return NULL;}
+    if (strom == NULL) 
+    { 
+        fprintf(stderr, "mallock fail\n"); 
+        return NULL;
+    }
+
     strom->type = declare_func;
     strom->nextcommand = NULL;
     strom->thiscommand.declare_func.func_name = func_name;
@@ -45,8 +86,20 @@ ast_t* createDeclareFuncNode(symbol_t* func_name, ast_t *func_body)
 
 ast_t* createIfNode(ast_t *expression, ast_t *true_block, ast_t *false_block)
 {
+    /*
+    if (expression == NULL || true_block == NULL || false_block == NULL)
+    {
+        return NULL;
+    }
+    */
+
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
-    if (strom == NULL) { fprintf(stderr, "mallock fail\n"); return NULL;}
+    if (strom == NULL) 
+    { 
+        fprintf(stderr, "mallock fail\n"); 
+        return NULL;
+    }
+
     strom->type = if_statement;
     strom->nextcommand = NULL;
     strom->thiscommand.if_statement.expression = expression;
@@ -57,8 +110,20 @@ ast_t* createIfNode(ast_t *expression, ast_t *true_block, ast_t *false_block)
 
 ast_t* createWhileNode(ast_t *expression, ast_t *while_block)
 {
+    /*
+    if (expression == NULL || while_block == NULL)
+    {
+        return NULL;
+    }
+    */
+
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
-    if (strom == NULL) { fprintf(stderr, "mallock fail\n"); return NULL;}
+    if (strom == NULL) 
+    { 
+        fprintf(stderr, "mallock fail\n"); 
+        return NULL;
+    }
+
     strom->type = while_statement;
     strom->nextcommand = NULL;
     strom->thiscommand.while_statement.expression = expression;
@@ -68,8 +133,20 @@ ast_t* createWhileNode(ast_t *expression, ast_t *while_block)
 
 ast_t* createExpressionNode(operator operator, exp_subtree_t *left, exp_subtree_t *right)
 {
+    /*
+    if (left == NULL || (operator != SingleOp && right == NULL))
+    {
+        return NULL;
+    }
+    */
+
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
-    if (strom == NULL) { fprintf(stderr, "mallock fail\n"); return NULL;}
+    if (strom == NULL) 
+    { 
+        fprintf(stderr, "mallock fail\n"); 
+        return NULL;
+    }
+
     strom->type = expression;
     strom->nextcommand = NULL;
     strom->thiscommand.expression.operator = operator;
@@ -80,117 +157,33 @@ ast_t* createExpressionNode(operator operator, exp_subtree_t *left, exp_subtree_
 
 ast_t* createReturnNode(ast_t *expression)
 {
+    /*
+    if (expression == NULL)
+    {
+        return NULL;
+    }
+    */
+
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
-    if (strom == NULL) { fprintf(stderr, "mallock fail\n"); return NULL;}
+    if (strom == NULL) 
+    { 
+        fprintf(stderr, "mallock fail\n"); 
+        return NULL;
+    }
+
     strom->type = return_statement;
     strom->nextcommand = NULL;
     strom->thiscommand.return_statement.expression = expression;
     return strom;
 }
 
-
-ast_t* printTree(ast_t *tree)
-{
-    switch (tree->type)
-    {
-    case root:
-        printf("Root Node\n");
-        break;
-    case assigment_expression:
-        printf("AssigmentExp - %s - ", tree->thiscommand.assigment_expression.target->name->string);
-        printTree(tree->thiscommand.assigment_expression.expression);
-        break;
-    
-    case assigment_func:
-        printf("AssigmentFunc: \nTarget - %s", tree->thiscommand.assigment_func.target->name->string);
-        printf(", function - %s\n", tree->thiscommand.assigment_func.func->name->string);
-        break;
-    
-    case declare_func:
-        printf("Declare Func: \nFunc name - %s ", tree->thiscommand.declare_func.func_name->name->string);
-        printf("\nFunc body: ");
-        printTree(tree->thiscommand.declare_func.func_body);
-        printf("\n");
-        break;
-    case if_statement:
-        printf("IF:\n");
-        printf("EXP:");
-        printTree(tree->thiscommand.if_statement.expression);
-        printf("\nTrue Block: ");
-        printTree(tree->thiscommand.if_statement.true_block);
-        printf("\nFalse Block: ");
-        printTree(tree->thiscommand.if_statement.false_block);
-        printf("\n");
-        break;
-    case while_statement:
-        printf("While - ");
-        printTree(tree->thiscommand.while_statement.expression);
-        printf("\n");
-        printTree(tree->thiscommand.while_statement.while_block);
-        printf("\n");
-        break;
-    case expression:
-        printf("Expression:\n");
-        if (tree->thiscommand.expression.operator == SingleOp)
-        {
-            printf("SingleOp\n");
-            break;
-        }
-
-        printf("OP - %d\n", tree->thiscommand.expression.operator);
-        if (tree->thiscommand.expression.left->type == exp)
-        {
-            printf("Left Subtree:\n");
-            printTree(tree->thiscommand.expression.left->data.exp);
-        }
-        else if (tree->thiscommand.expression.left->type == op)
-        {
-            printf("L - %s \n", tree->thiscommand.expression.left->data.op->name->string);
-        }
-        else if (tree->thiscommand.expression.left->type == imm)
-        {
-            printf("L - %ld \n", tree->thiscommand.expression.left->data.imm.data.type_int);
-        }
-        else if (tree->thiscommand.expression.left->type == nul)
-        {
-            printf("L - nul\n");
-        }
-        if (tree->thiscommand.expression.right->type == exp)
-        {
-            printf("Right Subtree:\n");
-            printTree(tree->thiscommand.expression.right->data.exp);
-        }
-        else if (tree->thiscommand.expression.right->type == op)
-        {
-            printf("R - %s \n", tree->thiscommand.expression.right->data.op->name->string);
-        }
-        else if (tree->thiscommand.expression.right->type == imm)
-        {
-            printf("R - %ld \n", tree->thiscommand.expression.right->data.imm.data.type_int);
-        }
-        else if (tree->thiscommand.expression.left->type == nul)
-        {
-            printf("R - nul \n");
-        }
-        printf("\n");
-        break;
-    default:
-        break;
-    }
-
-    if (tree->nextcommand != NULL)
-    {
-        printf("\n----------Next Top Level Command----------\n");
-        printTree(tree->nextcommand);
-    }
-    return tree;
-}
-
-
-
-
 void disposeTree(ast_t* tree)
 {
+    if (tree == NULL)
+    {
+        return;
+    }
+
     switch (tree->type)
     {
     case root:
@@ -289,11 +282,163 @@ void disposeTree(ast_t* tree)
     }
 }
 
+void printTree(ast_t *tree)
+{
+    switch (tree->type)
+    {
+    case root:
+        printf("Root Node\n");
+        break;
+    case assigment_expression:
+        printf("Node type = AssigmentExp\n");
+        printf("Target variable name = %s\n", tree->thiscommand.assigment_expression.target->name->string);
+        printTree(tree->thiscommand.assigment_expression.expression);
+        break;
+    
+    case assigment_func:
+        printf("Node type = AssigmentFunc\n");
+        printf("Target variable name = %s\n", tree->thiscommand.assigment_func.target->name->string);
+        printf("Function name = %s\n", tree->thiscommand.assigment_func.func->name->string);
+        break;
+    
+    case declare_func:
+        printf("Node type = Declare Func\n");
+        printf("Func name = %s\n", tree->thiscommand.declare_func.func_name->name->string);
+        printf("Commands of func body:\n");
+        printTree(tree->thiscommand.declare_func.func_body);
+        printf("End of func body\n");
+        break;
+
+    case if_statement:
+        printf("Node type = IF\n");
+        printTree(tree->thiscommand.if_statement.expression);
+        printf("True Block:\n");
+        printTree(tree->thiscommand.if_statement.true_block);
+        printf("False Block:\n");
+        printTree(tree->thiscommand.if_statement.false_block);
+        printf("End of if bodies\n");
+        break;
+
+    case while_statement:
+        printf("Node type = While\n");
+        printTree(tree->thiscommand.while_statement.expression);
+        printf("Commands of while body:\n");
+        printTree(tree->thiscommand.while_statement.while_block);
+        printf("End of while body\n");
+        break;
+
+    case return_statement:
+        printf("Node type = Return\n");
+        printTree(tree->thiscommand.return_statement.expression);
+        break;
+
+    case expression:
+        printf("Expression\n");
+        printf("Operator = %d\n", tree->thiscommand.expression.operator);
+
+        bool gotoLeftSubtree = false;
+        bool gotoRightSubtree = false;
+
+        printf("Left Operand = ");
+        if (tree->thiscommand.expression.left->type == exp)
+        {
+            printf("tree\n");
+            gotoLeftSubtree = true; 
+        }
+        else if (tree->thiscommand.expression.left->type == op)
+        {
+            printf("Variable %s\n", tree->thiscommand.expression.left->data.op->name->string);
+        }
+        else if (tree->thiscommand.expression.left->type == imm)
+        {
+            if (tree->thiscommand.expression.left->data.imm.type == type_int)
+            {
+                printf("Imm int %ld \n", tree->thiscommand.expression.left->data.imm.data.type_int);
+            }
+            else if (tree->thiscommand.expression.left->data.imm.type == type_float)
+            {
+                 printf("Imm float %f \n", tree->thiscommand.expression.left->data.imm.data.type_float);
+            }
+            else if (tree->thiscommand.expression.left->data.imm.type == type_string)
+            {
+                printf("Imm string %s \n", tree->thiscommand.expression.left->data.imm.data.type_string->string);
+            }        
+        }
+        else if (tree->thiscommand.expression.left->type == nul)
+        {
+            printf("nul\n");
+        }
+
+        if (tree->thiscommand.expression.operator != SingleOp)
+        {
+            printf("Right Operand = ");
+            if (tree->thiscommand.expression.right->type == exp)
+            {
+                printf("tree\n");
+                gotoRightSubtree = true; 
+            }
+            else if (tree->thiscommand.expression.right->type == op)
+            {
+                printf("Variable %s\n", tree->thiscommand.expression.right->data.op->name->string);
+            }
+            else if (tree->thiscommand.expression.right->type == imm)
+            {
+                if (tree->thiscommand.expression.right->data.imm.type == type_int)
+                {
+                    printf("Imm int %ld \n", tree->thiscommand.expression.right->data.imm.data.type_int);
+                }
+                else if (tree->thiscommand.expression.right->data.imm.type == type_float)
+                {
+                    printf("Imm float %f \n", tree->thiscommand.expression.right->data.imm.data.type_float);
+                }
+                else if (tree->thiscommand.expression.right->data.imm.type == type_string)
+                {
+                    printf("Imm string %s \n", tree->thiscommand.expression.right->data.imm.data.type_string->string);
+                }
+            }
+            else if (tree->thiscommand.expression.right->type == nul)
+            {
+                printf("nul\n");
+            }
+        }
+        
+        if (gotoLeftSubtree == true)
+        {
+            printf("Left Subtree\n");
+            printTree(tree->thiscommand.expression.left->data.exp);
+        }
+
+        if (gotoRightSubtree == true)
+        {
+            printf("Right Subtree\n");
+            printTree(tree->thiscommand.expression.right->data.exp);
+        }
+
+        return;
+
+    default:
+        printf("\nNeznama noda\n\n");
+        break;
+    }
+
+    if (tree->nextcommand != NULL)
+    {
+        printf("\n----------Next Command----------\n");
+        printTree(tree->nextcommand);
+    }
+}
+
+
+
 
 exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_int, double* imm_float, Dyn_String* imm_string)
 {
     exp_subtree_t *tree = malloc(sizeof(exp_subtree_t));
-    if (tree == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
+    if (tree == NULL) 
+    { 
+        fprintf(stderr, "malloc error\n"); 
+        return NULL; 
+    }
     
     if (symbol != NULL && subtree == NULL && imm_int == NULL && imm_float == NULL && imm_string == NULL)
     {
@@ -339,6 +484,11 @@ exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_
 
 void diposeExpSubtree(exp_subtree_t* tree)
 {
+    if (tree == NULL)
+    {
+        return;
+    }
+
     switch (tree->type)
     {
     case op: case imm: case nul: //simply frees the structure, 
@@ -358,10 +508,16 @@ void diposeExpSubtree(exp_subtree_t* tree)
     }
 }
 
+
 func_par_t* parInit()
 {
     func_par_t *parameters = malloc(sizeof(func_par_t));
-    if (parameters == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
+    if (parameters == NULL) 
+    { 
+        fprintf(stderr, "malloc error\n"); 
+        return NULL; 
+    }
+
     parameters->type = first;
     parameters->next = NULL;
     return parameters;   
@@ -381,8 +537,15 @@ func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, long int* in
             parameters = parameters->next;
         }
         parameters->next = malloc(sizeof(func_par_t));
-        if (parameters->next == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
-        else { parameters = parameters->next; }
+        if (parameters->next == NULL) 
+        { 
+            fprintf(stderr, "malloc error\n"); 
+            return NULL; 
+        }
+        else 
+        { 
+            parameters = parameters->next; 
+        }
     }
     parameters->next = NULL;
     if (symbol == NULL && int_input == NULL && float_input == NULL && string_input == NULL)
@@ -419,7 +582,6 @@ func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, long int* in
 
 void disposeParameters (func_par_t* parameters)
 {
-    
     func_par_t* this;
     while (parameters != NULL)
     {

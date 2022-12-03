@@ -580,7 +580,7 @@ token_t get_token()
                     return token;
                 }
                 else{
-                    token.type = TOKEN_EQUAL;
+                    token.type = TOKEN_SMALLER;
                     ungetc(c,stdin);
                     dyn_string_free(string);
                     return token;
@@ -590,7 +590,6 @@ token_t get_token()
             case STATE_BIGGER:
                 if(c == '='){
                     token.type = TOKEN_BIGGER_EQ;
-                    ungetc(c,stdin);
                     dyn_string_free(string);
                     return token;
                 }

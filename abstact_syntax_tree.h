@@ -79,7 +79,7 @@ ast_t* createReturnNode(ast_t *expression);
 void disposeTree(ast_t* tree);
 
 //ugly, for testing purposes
-ast_t* printTree(ast_t *tree);
+void printTree(ast_t *tree);
 
 
 

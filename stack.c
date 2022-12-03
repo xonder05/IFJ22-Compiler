@@ -1,10 +1,14 @@
 #include "stack.h"
 
-
 stack_t* initStack(stack_t *stack)
 {
     stack = malloc(sizeof(struct stack));
-    if (stack == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
+    if (stack == NULL) 
+    { 
+        fprintf(stderr, "malloc error\n"); 
+        return NULL; 
+    }
+
     stack->top = NULL;
     stack->items = 0;
     return stack;
@@ -12,16 +16,19 @@ stack_t* initStack(stack_t *stack)
 
 stackItem_t topStack(stack_t *stack, int fromTop)
 {
-    if (stack->items > fromTop)
-    {
-        stackItem_t item = *stack->top;
-        for (int i = 0; i < fromTop; i++)
-        {
-            item = *item.next;
-        }            
-        return item;
-    }
     stackItem_t item;
+    if (stack != NULL)
+    {
+        if (stack->items > fromTop)
+        {
+            item = *stack->top;
+            for (int i = 0; i < fromTop; i++)
+            {
+                item = *item.next;
+            }            
+            return item;
+        }
+    }
     item.data = NULL;
     item.next = NULL;
     item.type = EMPTY;
@@ -30,39 +37,62 @@ stackItem_t topStack(stack_t *stack, int fromTop)
 
 stack_t* pushStack(stack_t *stack, stackItem_t inputItem)
 {
-    stackItem_t *item = malloc(sizeof(struct stackItem));
-    if (item == NULL) { fprintf(stderr, "malloc error\n"); return NULL; }
+    if (stack == NULL) 
+    {
+        return NULL;
+    }
 
+    stackItem_t *item = malloc(sizeof(struct stackItem));
+    if (item == NULL) 
+    { 
+        fprintf(stderr, "malloc error\n"); 
+        return NULL; 
+    }
+
+    *item = inputItem;
     item->next = stack->top;
-    item->type = inputItem.type;
-    item->data = inputItem.data;
+
     stack->items++;
     stack->top = item;
+
     return stack;
 }
 
-
 stack_t* popStack(stack_t *stack)
 {
+    if (stack == NULL) 
+    {
+        return NULL;
+    }
+
     if (stack->items > 0)
     {
         stack->items--;
         stackItem_t *item = stack->top;
         stack->top = item->next;
         free(item);
+        return stack;
     }
-
-    return stack;
+    else
+    {
+        return NULL;
+    }
 }
 
 void disposeStack(stack_t *stack)
 {
+    if (stack == NULL) 
+    {
+        return ;
+    }
+
     while (topStack(stack, 0).type != EMPTY)
     {
         popStack(stack);
     }
     free(stack);
 }
+
 
 void printStack(stack_t *stack)
 {
@@ -84,7 +114,6 @@ void printStack(stack_t *stack)
         i++;
     }
 }
-
 
 int sizeStack(stack_t* stack)
 {

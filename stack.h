@@ -14,9 +14,8 @@ typedef enum
 
 typedef struct stack
 {
-    struct stackItem *top;
-    int items;
-
+    struct stackItem *top; //top of the stack
+    int items; //amount of items in stack
 }stack_t;
 
 typedef struct stackItem
@@ -24,14 +23,23 @@ typedef struct stackItem
     InputChars type;
     exp_subtree_t *data;
     struct stackItem *next;
-
 } stackItem_t;
 
+
+
+
+//success - new stack
+//fail - null
 stack_t *initStack(stack_t *stack);
+
+//success - found item 
+//fail - item.type = empty
 stackItem_t topStack(stack_t *stack, int fromTop); // fromTop == 0 returns top of stack
+
+//success - stack
+//fail - null
 stack_t* pushStack(stack_t *stack, stackItem_t item);
 stack_t *popStack(stack_t *stack);
 void disposeStack(stack_t *stack);
 void printStack(stack_t *stack);
 int sizeStack(stack_t* stack);
-// return values 0 success 1 fail
