@@ -546,7 +546,7 @@ PUSHS LF@&op1\n\
 POPFRAME\n\
 RETURN\n"
 
-#define DEF_CONVERT_FOR_MATH "$&convert_for_math\n\
+#define DEF_CONVERT_FOR_MATH "label $&convert_for_math\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@&op1\n\

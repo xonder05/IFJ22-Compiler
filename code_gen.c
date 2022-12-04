@@ -144,7 +144,7 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
     dyn_string_add_string(label_string,node->declare_func.func_name->name->string);
     dyn_string_add_char(label_string,'\n'); 
     dyn_string_add_string(label_string,"PUSHFRAME\n");
-
+           
 
     dyn_string_add_string(label_string,"DEFVAR LF@%retval1\n");
     dyn_string_add_string(label_string,"MOVE LF@%retval1 nil@nil\n");
@@ -245,29 +245,38 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
 
     }
     //tady def promene a dat do nich param hodnoty
-   /* if(node->declare_func.func_name->info.function.arguments.countOfArguments > 0)
+    if(node->declare_func.func_name->info.function.arguments.countOfArguments > 0)
     {
+        struct func_parameters *elem;
+        elem = node->declare_func.arguments;
+        Dyn_String *name = dyn_string_init();
         for(int i = 1; i <= node->declare_func.func_name->info.function.arguments.countOfArguments;i++) 
        {
 
-            // DEFVAR LF@param1
+            // DEFVAR LF@contextname
+            dyn_string_add_string(name,node->declare_func.func_name->name->string);
+            dyn_string_add_string(name,elem->op->name->string);
             dyn_string_add_string(label_string,"DEFVAR LF@");
-            dyn_string_add_string(label_string,node->declare_func.func_name->name->string);
-            // dyn_string_add_string(label_string,node->declare_func.func_name->info.function.arguments.);
+            dyn_string_add_string(label_string,name->string);
+            dyn_string_add_char(label_string,'\n'); 
+            varListInsertLast(var_list,name);
 
+
+            // MOVE LF@contextname
+            dyn_string_add_string(label_string,"MOVE LF@");
+            dyn_string_add_string(label_string,name->string);
+            dyn_string_add_char(label_string,' ');
+
+
+            //                    LF@parami
+            dyn_string_add_string(label_string,"LF@param");
             unsigned_int_to_string(label_string,i);
             dyn_string_add_char(label_string,'\n'); 
-
-            // MOVE LF@param1 LF@%1
-            dyn_string_add_string(label_string,"MOVE LF@param");
-            unsigned_int_to_string(label_string,i);
-            dyn_string_add_string(label_string," LF@%");
-            
-            unsigned_int_to_string(label_string,i);
-            dyn_string_add_char(label_string,'\n'); 
-
+            elem = elem ->next;
+            dyn_string_clear(name);
        }
-    }*/
+        dyn_string_free(name);
+    }
 
     instListInsertLast(func_list,func_beg,label_string);
 
@@ -343,6 +352,8 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
     Dyn_String *call = dyn_string_init();
     dyn_string_add_string(call,"CREATEFRAME\n");
 
+    func_par_t* par = node->assigment_func.parameters;
+     
     for(int i = 1; i <= node->assigment_func.func->info.function.arguments.countOfArguments;i++) 
     {
         dyn_string_add_string(call,"DEFVAR TF@%");
@@ -354,39 +365,40 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
 
         //tedka bud imm nebo jinou var
         //jako argumenty
-        switch (node->assigment_func.parameters[i-1].type)
+        // switch (node->assigment_func.func->info.function.arguments.TypesOfArguments[i-1])
+        switch (par->type)
         {
             case par_op:
                 if(node->assigment_func.parameters[i-1].op->context == NULL)
                 {
                     dyn_string_add_string(call,"GF@");
-                    dyn_string_add_string(call,node->assigment_func.parameters[i-1].op->name->string);
+                    dyn_string_add_string(call,par->op->name->string);
                     dyn_string_add_char(call,'\n');
                 }
                 else
                 {
                     dyn_string_add_string(call,"LF@");
-                    dyn_string_add_string(call,node->assigment_func.parameters[i-1].op->name->string);
+                    dyn_string_add_string(call,par->op->name->string);
                     dyn_string_add_char(call,'\n');
                 }
                 break;
             case par_imm:
-                switch (node->assigment_func.parameters[i-1].imm.type)
+                switch (par->imm.type)
                 {
                     case type_int:
                         dyn_string_add_string(call,"int@");
-                        unsigned_int_to_string(call,node->assigment_func.parameters[i-1].imm.data.type_int);
+                        unsigned_int_to_string(call,par->imm.data.type_int);
                         dyn_string_add_char(call,'\n');
                         break;
                     case type_float:
                         dyn_string_add_string(call,"float@");
                         char float_string[100];
-                        sprintf(float_string,"%a",node->assigment_func.parameters[i-1].imm.data.type_float);
+                        sprintf(float_string,"%a",par->imm.data.type_float);
                         dyn_string_add_char(call,'\n');
                         break;
                     case type_string:
                         dyn_string_add_string(call,"string@");
-                        dyn_string_add_string(call,node->assigment_func.parameters[i-1].imm.data.type_string->string);
+                        dyn_string_add_string(call,par->imm.data.type_string->string);
                         dyn_string_add_char(call,'\n');
                         break;
                 }
@@ -399,8 +411,11 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
                 return 1;
                 break;
         }
+        par = par->next;
+
 
     }
+    
     //CALL LABEL
     dyn_string_add_string(call,"CALL $");
     if(node->assigment_func.func->context != NULL)
@@ -417,53 +432,55 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
 
 int generate_call_func_write(node_t *node, inst_list_t *main_body_list)
 {
-    Dyn_String *call = dyn_string_init();
 
-    for(int i = 1; i <= node->assigment_func.func->info.function.arguments.countOfArguments;i++) 
+    Dyn_String *call = dyn_string_init();
+    func_par_t* par = node->assigment_func.parameters;
+    // for(int i = 1; i <= node->assigment_func.func->info.function.arguments.countOfArguments;i++) 
+    for(int i = 1; par != NULL;i++) 
     {
         dyn_string_add_string(call,"CREATEFRAME\n");
-        dyn_string_add_string(call,"DEFVAR TF@%");
-        unsigned_int_to_string(call,i);
+        dyn_string_add_string(call,"DEFVAR TF@%1");
+        // unsigned_int_to_string(call,i);
         dyn_string_add_char(call,'\n');
-        dyn_string_add_string(call,"MOVE TF@%");
-        unsigned_int_to_string(call,i);
+        dyn_string_add_string(call,"MOVE TF@%1");
+        // unsigned_int_to_string(call,i);
         dyn_string_add_char(call,' ');
 
         //tedka bud imm nebo jinou var
         //jako argumenty
-        switch (node->assigment_func.parameters[i-1].type)
+        switch (par->type)
         {
             case par_op:
-                if(node->assigment_func.parameters[i-1].op->context == NULL)
+                if(par->op->context == NULL)
                 {
                     dyn_string_add_string(call,"GF@");
-                    dyn_string_add_string(call,node->assigment_func.parameters[i-1].op->name->string);
+                    dyn_string_add_string(call,par->op->name->string);
                     dyn_string_add_char(call,'\n');
                 }
                 else
                 {
                     dyn_string_add_string(call,"LF@");
-                    dyn_string_add_string(call,node->assigment_func.parameters[i-1].op->name->string);
+                    dyn_string_add_string(call,par->op->name->string);
                     dyn_string_add_char(call,'\n');
                 }
                 break;
             case par_imm:
-                switch (node->assigment_func.parameters[i-1].imm.type)
+                switch (par->imm.type)
                 {
                     case type_int:
                         dyn_string_add_string(call,"int@");
-                        unsigned_int_to_string(call,node->assigment_func.parameters[i-1].imm.data.type_int);
+                        unsigned_int_to_string(call,par->imm.data.type_int);
                         dyn_string_add_char(call,'\n');
                         break;
                     case type_float:
                         dyn_string_add_string(call,"float@");
                         char float_string[100];
-                        sprintf(float_string,"%a",node->assigment_func.parameters[i-1].imm.data.type_float);
+                        sprintf(float_string,"%a",par->imm.data.type_float);
                         dyn_string_add_char(call,'\n');
                         break;
                     case type_string:
                         dyn_string_add_string(call,"string@");
-                        dyn_string_add_string(call,node->assigment_func.parameters[i-1].imm.data.type_string->string);
+                        dyn_string_add_string(call,par->imm.data.type_string->string);
                         dyn_string_add_char(call,'\n');
                         break;
                 }
@@ -485,6 +502,8 @@ int generate_call_func_write(node_t *node, inst_list_t *main_body_list)
         dyn_string_add_string(call,node->assigment_func.func->name->string);
         dyn_string_add_char(call,'\n');
         instListInsertLast(main_body_list,func_call,call);
+        dyn_string_clear(call);
+        par = par ->next;
 
     }
     dyn_string_free(call);
@@ -494,8 +513,7 @@ int generate_call_func_write(node_t *node, inst_list_t *main_body_list)
 
 // melo by fungovat
 int generate_func_asign(node_t *node, inst_list_t *main_body_list,var_generated_t *var_list)
-{
-    
+{    
     int error_code =  generate_call_func(node,main_body_list);
     //fce call uz je v listu
 
@@ -597,6 +615,7 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
                 }
                 else if(node->expression.left->type == imm)
                 {
+
                     switch (node->expression.left->data.imm.type)
                     {
                     case type_int:
@@ -626,6 +645,7 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
                     return 0;
                 }
                 // jinak error
+
                 dyn_string_free(express);
                 return 1;
 
@@ -640,6 +660,65 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
     case Lesser:
     case GreaterEqual:
     case LesserEqual:
+
+                //ted se postarat o pravou vetev
+        //pokud sme tady tak v provo je bud hodnota ne bo dalsi expr (ne single)
+        //pak ty operace
+        switch (node->expression.right->type)
+        {
+        case op:
+            dyn_string_add_string(express,"PUSHS ");
+            if(node->expression.right->data.op->context == NULL)
+            {
+                dyn_string_add_string(express,"GF@");
+            }
+            else
+            {
+                dyn_string_add_string(express,"LF@");
+            }
+            if(node->expression.right->data.op->context != NULL)
+            {
+                dyn_string_add_string(express,node->expression.right->data.op->context->string);
+            }
+            dyn_string_add_string(express,node->expression.right->data.op->name->string);
+            dyn_string_add_char(express,'\n');
+            break;
+        case imm:
+                switch (node->expression.right->data.imm.type)
+                {
+                case type_int:
+                    dyn_string_add_string(express,"PUSHS int@");
+                    unsigned_int_to_string(express,node->expression.right->data.imm.data.type_int);
+                    dyn_string_add_char(express,'\n');
+                    break;
+                case type_float:
+                    dyn_string_add_string(express,"PUSHS float@");
+                    char float_string[100];
+                    sprintf(float_string,"%a",node->expression.right->data.imm.data.type_float);
+                    dyn_string_add_string(express,float_string);
+                    dyn_string_add_char(express,'\n');
+                    break;
+                case type_string:
+                    dyn_string_add_string(express,"PUSHS string@");
+                    dyn_string_add_string(express,node->expression.right->data.imm.data.type_string->string);
+                    dyn_string_add_char(express,'\n');
+                    break;        
+                default:
+                    break;
+                }
+            break;
+        case exp:
+            ev_expression(&(node->expression.right->data.exp->thiscommand), main_body_list); 
+            break;
+        case nul:
+            return 1;
+            break;
+
+          default:
+            break;
+        }
+
+
         // vlevo je op, bude push
         if(node->expression.left->type == op)
         {
@@ -695,62 +774,9 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
             return 1;
         }
 
-        //ted se postarat o pravou vetev
-        //pokud sme tady tak v provo je bud hodnota ne bo dalsi expr (ne single)
-        //pak ty operace
-        switch (node->expression.right->type)
-        {
-        case op:
-            dyn_string_add_string(express,"PUSHS ");
-            if(node->expression.right->data.op->context == NULL)
-            {
-                dyn_string_add_string(express,"GF@");
-            }
-            else
-            {
-                dyn_string_add_string(express,"LF@");
-            }
-            if(node->expression.right->data.op->context != NULL)
-            {
-                dyn_string_add_string(express,node->expression.right->data.op->context->string);
-            }
-            dyn_string_add_string(express,node->expression.right->data.op->name->string);
-            dyn_string_add_char(express,'\n');
-            break;
-        case imm:
-                switch (node->expression.right->data.imm.type)
-                {
-                case type_int:
-                    dyn_string_add_string(express,"PUSHS int@");
-                    unsigned_int_to_string(express,node->expression.right->data.imm.data.type_int);
-                    dyn_string_add_char(express,'\n');
-                    break;
-                case type_float:
-                    dyn_string_add_string(express,"PUSHS float@");
-                    char float_string[100];
-                    sprintf(float_string,"%a",node->expression.right->data.imm.data.type_float);
-                    dyn_string_add_string(express,float_string);
-                    dyn_string_add_char(express,'\n');
-                    break;
-                case type_string:
-                    dyn_string_add_string(express,"PUSHS string@");
-                    dyn_string_add_string(express,node->expression.right->data.imm.data.type_string->string);
-                    dyn_string_add_char(express,'\n');
-                    break;        
-                default:
-                    break;
-                }
-            break;
-        case exp:
-            ev_expression(&(node->expression.right->data.exp->thiscommand), main_body_list); 
-            break;
-        case nul:
-            return 1;
-            break;
 
-        default:
-            break;
-        }
+
+      
 
 
 
@@ -765,8 +791,7 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
     //vysledek na zasobnik
     //neni singleOP
 
-    //dodelat convert pro kazdej operator
-    // dyn_string_add_string(express,"CALL $&convert\n");
+    //jaj
     switch (node->expression.operator)
     {
     case Plus:
@@ -827,6 +852,7 @@ int gen_assig_expression(node_t *node, inst_list_t *main_body_list,var_generated
 {
     
     int error_code =  ev_expression(&(node->assigment_expression.expression->thiscommand),main_body_list);
+
 
 
     Dyn_String *var_name = dyn_string_init();
