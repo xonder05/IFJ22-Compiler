@@ -490,7 +490,8 @@ JUMP $&ev_if_to_ret_end_true\n\
 \n\
 label $&ev_if_to_ret_string\n\
 JUMPIFEQ $&ev_if_to_ret_end_false LF@&op1 string@0\n\
-JUMPIFEQ $&ev_if_to_ret_end_false LF@&op1 string@\n\
+#nedefinovana promena je chyba\n\
+JUMPIFEQ $&ev_if_to_ret_end_false_exit5 LF@&op1 string@\n\
 JUMP $&ev_if_to_ret_end_true\n\
 \n\
 label $&ev_if_to_ret_nil\n\
@@ -505,21 +506,107 @@ MOVE LF@&bool1 bool@true\n\
 label $&ev_if_to_ret_end_false\n\
 MOVE LF@%retval1 LF@&bool1\n\
 POPFRAME\n\
-RETURN\n"
+RETURN\n\
+LABEL $&ev_if_to_ret_end_false_exit5\n\
+EXIT int@5\n"
 
 #define DEF_CONVERT_FOR_DIV "label $&convert_for_div\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@&op1\n\
 DEFVAR LF@&op2\n\
+DEFVAR LF@&type1\n\
+DEFVAR LF@&type2\n\
 POPS LF@&op1\n\
 POPS LF@&op2\n\
-INT2FLOAT LF@&op2 LF@&op2 \n\
-INT2FLOAT LF@&op1 LF@&op1 \n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+JUMPIFEQ $&convert_for_div_par2 LF@&type1 string@float\n\
+JUMPIFEQ $&convert_for_div_par1_int LF@&type1 string@int\n\
+JUMPIFEQ $&convert_for_div_par1_nil LF@&type1 string@nil  \n\
+EXIT int@7\n\
+LABEL $&convert_for_div_par1_nil\n\
+MOVE LF@&op1 float@0x0p+0\n\
+JUMP $&convert_for_div_par2\n\
+LABEL $&convert_for_div_par1_int\n\
+INT2FLOAT LF@&op1 LF@&op1\n\
+LABEL $&convert_for_div_par2\n\
+JUMPIFEQ $&convert_for_div_end LF@&type2 string@float\n\
+JUMPIFEQ $&convert_for_div_par2_int LF@&type2 string@int\n\
+JUMPIFEQ $&convert_for_div_par2_nil LF@&type1 string@nil\n\
+EXIT int@7\n\
+LABEL $&convert_for_div_par2_nil\n\
+MOVE LF@&op2 float@0x0p+0\n\
+JUMP $&convert_for_div_end\n\
+LABEL $&convert_for_div_par2_int\n\
+INT2FLOAT LF@&op2 LF@&op2\n\
+LABEL $&convert_for_div_end\n\
 PUSHS LF@&op2\n\
 PUSHS LF@&op1\n\
 POPFRAME\n\
 RETURN\n"
+
+#define DEF_CONVERT_FOR_MATH "$&convert_for_math\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+DEFVAR LF@&type1\n\
+DEFVAR LF@&type2\n\
+POPS LF@&op1\n\
+POPS LF@&op2\n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+#check for string and nill\n\
+JUMPIFEQ $&convert_for_math_error LF@&type1 string@string\n\
+JUMPIFEQ $&convert_for_math_error LF@&type2 string@string\n\
+JUMPIFEQ $&convert_for_math_nil1 LF@&type1 string@nil\n\
+label $&convert_for_math_back_nil1\n\
+JUMPIFEQ $&convert_for_math_nil2 LF@&type2 string@nil\n\
+label $&convert_for_math_back_nil2\n\
+#both are numerical\n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+JUMPIFEQ $&convert_for_math_end LF@&type1 LF@&type2\n\
+#one is float the other int\n\
+JUMPIFEQ $&convert_for_math_int1 LF@&type1 string@int\n\
+INT2FLOAT LF@&op2 LF@&op2\n\
+JUMP $&convert_for_math_end\n\
+label $&convert_for_math_int1\n\
+INT2FLOAT LF@&op1 LF@&op1\n\
+label $&convert_for_math_end\n\
+PUSHS LF@&op2\n\
+PUSHS LF@&op1\n\
+POPFRAME\n\
+RETURN\n\
+label $&convert_for_math_error\n\
+EXIT int@7\n\
+label $&convert_for_math_nil1\n\
+MOVE LF@&op1 int@0\n\
+JUMP $&convert_for_math_back_nil1\n\
+label $&convert_for_math_nil2\n\
+MOVE LF@&op2 int@0\n\
+JUMP $&convert_for_math_back_ni2\n"
+
+#define DEF_CONVERT_FOR_CONC "label $&convert_for_conc\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+DEFVAR LF@&type1\n\
+DEFVAR LF@&type2\n\
+POPS LF@&op1\n\
+POPS LF@&op2\n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+JUMPIFNEQ $&convert_for_conc_error LF@&type1 string@string\n\
+JUMPIFNEQ $&convert_for_conc_error LF@&type1 LF@&type2 \n\
+PUSHS LF@&op2\n\
+PUSHS LF@&op1\n\
+POPFRAME\n\
+RETURN\n\
+label $&convert_for_conc_error\n\
+EXIT int@7\n"
 
 #define DEF_CONVERT "label $&convert\n\
 CREATEFRAME\n\
@@ -649,6 +736,13 @@ void def_built_in(inst_list_t *list)
     instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
     dyn_string_clear(string);
 
+    dyn_string_add_string(string,DEF_CONVERT_FOR_MATH);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
+
+    dyn_string_add_string(string,DEF_CONVERT_FOR_CONC);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
 
     dyn_string_add_string(string,DEF_CONVERT);
     instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);

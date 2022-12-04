@@ -25,3 +25,5 @@ int gen_assig_expression(node_t *node, inst_list_t *main_body_list,var_generated
 int generate_if(node_t *node, inst_list_t *main_body_list,int *if_count,inst_list_t *func_list,var_generated_t *var_list);
 
 int generate_while(node_t *node, inst_list_t *main_body_list, inst_list_t *func_list,var_generated_t *var_list,int *if_count);
+
+int generate_return(node_t *node, inst_list_t *main_body_list);

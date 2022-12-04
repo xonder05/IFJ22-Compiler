@@ -20,6 +20,8 @@ typedef enum
     var_def,//assign_express
     expression_ev,
     statement,
+    label_def,
+    return_def,
 
     final_header_block,
     final_main_label_block,

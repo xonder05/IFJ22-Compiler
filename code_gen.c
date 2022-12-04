@@ -33,7 +33,7 @@ int gen_from_ass(ast_t *tree, inst_list_t *body_list,inst_list_t *func_list,int 
         return generate_func_asign(&(tree->thiscommand),body_list,var_list) + gen_from_ass(tree ->nextcommand,body_list,func_list,if_count,var_list);
         break;
     case declare_func:
-        return generate_func(&(tree->thiscommand),body_list,if_count,var_list) + gen_from_ass(tree ->nextcommand,body_list,func_list,if_count,var_list);
+        return generate_func(&(tree->thiscommand),func_list,if_count,var_list) + gen_from_ass(tree ->nextcommand,body_list,func_list,if_count,var_list);
         break;   
     case if_statement:
         return generate_if(&(tree->thiscommand),body_list,if_count,func_list,var_list) + gen_from_ass(tree ->nextcommand,body_list,func_list,if_count,var_list);
@@ -43,6 +43,9 @@ int gen_from_ass(ast_t *tree, inst_list_t *body_list,inst_list_t *func_list,int 
         break;
     case expression:
         return ev_expression(&(tree->thiscommand),body_list);
+        break;
+    case return_statement:
+        return generate_return(&(tree->thiscommand),body_list);
         break;
     
     default:
@@ -257,6 +260,7 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
     //end
     Dyn_String *end = dyn_string_init();
     //check for return type
+    dyn_string_add_string(end,"#############CHECK RETURN TYPE###########\n");
     dyn_string_add_string(end,"TYPE LF@type_var LF@%retval1\n");
     dyn_string_add_string(end,"JUMPIFEQ $ReturnTypeCheck ");
     dyn_string_add_string(end,"LF@type_var string@");
@@ -501,6 +505,7 @@ int generate_func_asign(node_t *node, inst_list_t *main_body_list,var_generated_
         dyn_string_add_char(assign,'\n');
         //kdyby to byl while
         instInsertBeforeWhile(main_body_list,var_dec,assign);
+
         dyn_string_clear(assign);
     }
 
@@ -730,17 +735,20 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
     //vysledek na zasobnik
     //neni singleOP
 
-    //dodelat concat
-    dyn_string_add_string(express,"CALL $&convert\n");
+    //dodelat convert pro kazdej operator
+    // dyn_string_add_string(express,"CALL $&convert\n");
     switch (node->expression.operator)
     {
     case Plus:
+        dyn_string_add_string(express,"CALL $&convert_for_math\n");
         dyn_string_add_string(express,"ADDS\n");
         break;
     case Minus:
+        dyn_string_add_string(express,"CALL $&convert_for_math\n");
         dyn_string_add_string(express,"SUBS\n");
         break;
     case Multiply:
+        dyn_string_add_string(express,"CALL $&convert_for_math\n");
         dyn_string_add_string(express,"MULS\n");
         break;
     case Divide:
@@ -748,6 +756,7 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
         dyn_string_add_string(express,"DIVS\n");
         break;
     case Dot:
+        dyn_string_add_string(express,"CALL $&convert_for_conc\n");
         dyn_string_add_string(express,"CALL $&conc\n");
         break;
     case Equal:
@@ -907,11 +916,12 @@ int generate_if(node_t *node, inst_list_t *main_body_list,int *if_count,inst_lis
 //melo by fungovat
 int generate_while(node_t *node, inst_list_t *main_body_list, inst_list_t *func_list,var_generated_t *var_list,int *if_count)
 {
+
     int error_code;
     *if_count = *if_count + 1;
     Dyn_String *while_code = dyn_string_init();
     Dyn_String *label_base_name = dyn_string_init();
-    dyn_string_add_string(label_base_name,"$while\n");
+    dyn_string_add_string(label_base_name,"$while");
     unsigned_int_to_string(label_base_name,*if_count);
 
     //zarazka pro while
@@ -921,6 +931,10 @@ int generate_while(node_t *node, inst_list_t *main_body_list, inst_list_t *func_
     dyn_string_add_string(while_code,"LABEL ");
     dyn_string_add_string(while_code,label_base_name->string);
     dyn_string_add_string(while_code,"start\n");
+    instListInsertLast(main_body_list,label_def,while_code);
+    dyn_string_clear(while_code);
+
+    // instListInsertLast
     //JUMPIFNEQ ZA ev true
     error_code = ev_expression(&(node->while_statement.expression->thiscommand),main_body_list);
     {
@@ -939,6 +953,8 @@ int generate_while(node_t *node, inst_list_t *main_body_list, inst_list_t *func_
     dyn_string_add_string(while_code,label_base_name->string);
     dyn_string_add_string(while_code,"end ");
     dyn_string_add_string(while_code,"TF@%retval1 bool@true\n");
+    instListInsertLast(main_body_list,label_def,while_code);
+    dyn_string_clear(while_code);
 
 
     //BODY
@@ -955,6 +971,7 @@ int generate_while(node_t *node, inst_list_t *main_body_list, inst_list_t *func_
     dyn_string_add_string(while_code,label_base_name->string);
     dyn_string_add_string(while_code,"end\n");
 
+    instListInsertLast(main_body_list,while_loop_body,while_code);
     //zarazka konec while
     instListInsertLast(main_body_list,while_loop_end,empty);
 
@@ -962,4 +979,16 @@ int generate_while(node_t *node, inst_list_t *main_body_list, inst_list_t *func_
     dyn_string_free(while_code);
     dyn_string_free(label_base_name);
     return 0;
+}
+
+int generate_return(node_t *node, inst_list_t *main_body_list)
+{
+    Dyn_String *return_string = dyn_string_init();
+    dyn_string_add_string(return_string,"####RETERN START######\n");
+    int error_code =  ev_expression(&(node->return_statement.expression->thiscommand),main_body_list);
+    dyn_string_add_string(return_string,"POPS LF@%retval1\n");
+    dyn_string_add_char(return_string,'\n');
+    instListInsertLast(main_body_list,return_def,return_string);
+    dyn_string_free(return_string);
+    return error_code;
 }
