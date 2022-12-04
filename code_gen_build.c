@@ -410,12 +410,19 @@ CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@&op1\n\
 DEFVAR LF@&op2\n\
+DEFVAR LF@&type1\n\
+DEFVAR LF@&type2\n\
 POPS LF@&op2\n\
 POPS LF@&op1\n\
-TYPE LF@&op1 LF@&op1\n\
-TYPE LF@&op2 LF@&op2\n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+JUMPIFEQ $&equal_type_type LF@&type1 LF@&type2\n\
+PUSHS bool@false\n\
+JUMP $&equal_type_end\n\
+label $&equal_type_type\n\
 EQ LF@&op1 LF@&op1 LF@&op2\n\
 PUSHS LF@&op1\n\
+label $&equal_type_end\n\
 POPFRAME\n\
 RETURN\n"
 
@@ -424,13 +431,20 @@ CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@&op1\n\
 DEFVAR LF@&op2\n\
+DEFVAR LF@&type1\n\
+DEFVAR LF@&type2\n\
 POPS LF@&op2\n\
 POPS LF@&op1\n\
-TYPE LF@&op1 LF@&op1\n\
-TYPE LF@&op2 LF@&op2\n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+JUMPIFEQ $&not_equal_type_type LF@&type1 LF@&type2\n\
+PUSHS bool@true\n\
+JUMP $&not_equal_type_end\n\
+label $&not_equal_type_type\n\
 EQ LF@&op1 LF@&op1 LF@&op2\n\
 NOT LF@&op1 LF@&op1\n\
 PUSHS LF@&op1\n\
+label $&not_equal_type_end\n\
 POPFRAME\n\
 RETURN\n"
 

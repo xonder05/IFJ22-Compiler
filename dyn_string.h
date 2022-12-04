@@ -41,3 +41,5 @@ int pow_int (int base, int exp);
 
 // converts int to string and appends it to Dyn_string 
 void unsigned_int_to_string(Dyn_String *old,int num);
+
+void reverse_string(char *s);

@@ -660,8 +660,7 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
     case Lesser:
     case GreaterEqual:
     case LesserEqual:
-
-                //ted se postarat o pravou vetev
+        //ted se postarat o pravou vetev
         //pokud sme tady tak v provo je bud hodnota ne bo dalsi expr (ne single)
         //pak ty operace
         switch (node->expression.right->type)
@@ -711,10 +710,11 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
             ev_expression(&(node->expression.right->data.exp->thiscommand), main_body_list); 
             break;
         case nul:
-            return 1;
+            dyn_string_add_string(express,"PUSHS nil@nil\n");
             break;
 
           default:
+            return 1;
             break;
         }
 
@@ -768,21 +768,13 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
         {
             ev_expression(&(node->expression.left->data.exp->thiscommand), main_body_list); 
         }
-        //chyba
         else if(node->expression.left->type == nul)
         {
-            return 1;
+            dyn_string_add_string(express,"PUSHS nil@nil\n");
+
         }
 
 
-
-      
-
-
-
-
-        // ev_expression(node->expression.left->data.expression, main_body_list);
-        // ev_expression(node->expression.right->data.expression, main_body_list);
 
     default:
         break;
@@ -1043,12 +1035,17 @@ int generate_while(node_t *node, inst_list_t *main_body_list, inst_list_t *func_
 
 int generate_return(node_t *node, inst_list_t *main_body_list)
 {
-    Dyn_String *return_string = dyn_string_init();
-    dyn_string_add_string(return_string,"####RETERN START######\n");
-    int error_code =  ev_expression(&(node->return_statement.expression->thiscommand),main_body_list);
-    dyn_string_add_string(return_string,"POPS LF@%retval1\n");
-    dyn_string_add_char(return_string,'\n');
-    instListInsertLast(main_body_list,return_def,return_string);
-    dyn_string_free(return_string);
-    return error_code;
+    if(node->return_statement.expression != NULL)
+    {
+        Dyn_String *return_string = dyn_string_init();
+        dyn_string_add_string(return_string,"####RETERN START######\n");
+        int error_code =  ev_expression(&(node->return_statement.expression->thiscommand),main_body_list);
+        dyn_string_add_string(return_string,"POPS LF@%retval1\n");
+        dyn_string_add_char(return_string,'\n');
+        instListInsertLast(main_body_list,return_def,return_string);
+        dyn_string_free(return_string);
+        return error_code;
+    }
+    return 0;
+    
 }
