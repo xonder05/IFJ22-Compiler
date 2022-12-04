@@ -57,11 +57,9 @@ int func_type();
 
 
 
-
 int parse(symTable_t* Table, ast_t* AST)
 {
     //insert premade function
-
 
     if (AST == NULL)
     {
@@ -111,7 +109,7 @@ void get_unprocessed_token()
 {
     if(scanner_result_is_processed)
     {
-        free_token(scanner_result);
+        //free_token(scanner_result);
         scanner_result = get_token();
         scanner_result_is_processed = false;
     } 
@@ -120,7 +118,6 @@ void get_unprocessed_token()
 //PROGRAM => TOKEN_PROLOG COMMAND_OR_DECLARE_FUNCTION TOKEN_END_TAG
 int rule_programm(symTable_t* Table, stackAST_t* stack)
 {
-    printf("rule_program\n");
 
     //TOKEN_PROLOG
     get_unprocessed_token();
@@ -155,7 +152,6 @@ int rule_programm(symTable_t* Table, stackAST_t* stack)
 
 int command_or_declare_function(symTable_t* Table, stackAST_t* stack)
 {
-    printf("comman_or_declare\n");
 
     int result = delcare_function(Table, stack);
 
@@ -176,14 +172,12 @@ int command_or_declare_function(symTable_t* Table, stackAST_t* stack)
     else if (result == FIAL_IN_MIDDLE)
         return FIAL_IN_MIDDLE;
 
-
     return SUCCESS;
 }
 
 
 int delcare_function(symTable_t* Table, stackAST_t* stack)
 {
-    printf("declare_func\n");
     //Keywor func
     get_unprocessed_token();
 
@@ -383,8 +377,8 @@ int delcare_function(symTable_t* Table, stackAST_t* stack)
 
 int command(symTable_t* Table, stackAST_t* stack)
 {
-    printf("command\n");
     int result;
+
 
     //Variable
     result = command_variable(Table, stack);
@@ -462,7 +456,6 @@ int command(symTable_t* Table, stackAST_t* stack)
 //TOKEN_VAR_ID TOKEN_EQUAL CALL_FUNCTION_OR_EXPRESION TOKEN_SEMICOLON COMMAND
 int command_variable(symTable_t* Table, stackAST_t* stack)
 {
-    printf("variable\n");
     //TOKEN_VAR_ID
     get_unprocessed_token();
     if (scanner_result.type != TOKEN_VAR_ID)
@@ -525,7 +518,6 @@ int command_variable(symTable_t* Table, stackAST_t* stack)
 //KEYWORD_IF TOKEN_L_PAR EXPRESSION TOKEN_R_PAR TOKEN_L_BRAC COMMAND TOKEN_R_BRAC KEYWORD_ELSE TOKEN_L_BRAC COMMAND TOKEN_R_BRAC COMMAND
 int command_if(symTable_t* Table, stackAST_t* stack)
 {
-    printf("if\n");
     //KEYWORD_IF
     get_unprocessed_token();
     if (scanner_result.type != TOKEN_KEYWORD)
@@ -643,7 +635,6 @@ int command_if(symTable_t* Table, stackAST_t* stack)
 //KEYWORD_WHILE TOKEN_L_PAR EXPRESSION TOKEN_R_PAR TOKEN_L_BRAC COMMAND TOKEN_R_BRAC COMMAND
 int command_while(symTable_t* Table, stackAST_t* stack)
 {
-    printf("while\n");
     // KEYWORD_WHILE
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_KEYWORD)
@@ -717,7 +708,6 @@ int command_while(symTable_t* Table, stackAST_t* stack)
 // CALL_FUNCTION TOKEN_SEMICOLON
 int command_call_function(symTable_t* Table, stackAST_t* stack)
 {
-    printf("comand_call_func\n");
     // CALL_FUNCTION 
     VariableType_t ReturnType = ERROR_TYPE;
     int result = call_function(Table, &ReturnType, stack);
@@ -742,7 +732,6 @@ int command_call_function(symTable_t* Table, stackAST_t* stack)
 // KEYWORD_RETURN EXPRESSION TOKEN_SEMICOLON COMMAND
 int command_return(symTable_t* Table, stackAST_t* stack)
 {
-    printf("retrun\n");
     // KEYWORD_RETURN
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_KEYWORD)
@@ -813,7 +802,6 @@ int command_return(symTable_t* Table, stackAST_t* stack)
 
 int call_function_or_expresion(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* stack)
 {
-    printf("call_or_exp\n");
     if(call_function(Table, RetrunType, stack) != SUCCESS)
     {
         int result = 0;
@@ -831,6 +819,7 @@ int call_function_or_expresion(symTable_t* Table, VariableType_t* RetrunType, st
             stack->top->LastCommand->thiscommand.assigment_func.target;
             stack->top->LastCommand->thiscommand.assigment_expression.expression = Exp;
         }
+
         return result;
     }
     return SUCCESS;
@@ -839,7 +828,6 @@ int call_function_or_expresion(symTable_t* Table, VariableType_t* RetrunType, st
 // TOKEN_FUNC_ID TOKEN_L_PAR TERM TOKEN_R_PAR 
 int call_function(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* stack)
 {
-    printf("call\n");
     // TOKEN_FUNC_ID
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_FUNC_ID)
@@ -918,8 +906,7 @@ int call_function(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* sta
 }
 
 int term(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* FuncParam)
-{
-    printf("term\n");
+{;
     int result;
     result = term_without_epsilon(Table, Arguments, FuncParam);
     if (result == FAIL_IN_BEGIN || result == SUCCESS)
@@ -933,7 +920,6 @@ int term(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* FuncPa
 
 int term_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* FuncParam)
 {
-    printf("term_withput_eps\n");
     int result;
 
     result = term_int();
@@ -1035,7 +1021,6 @@ int term_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments, fu
 
 int term_next(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* FuncParam)
 {
-    printf("term_next\n");
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_COMMA)
     {
@@ -1056,7 +1041,6 @@ int term_next(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* F
 
 int term_int()
 {
-    printf("term_int\n");
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_INT)
     {
@@ -1069,7 +1053,6 @@ int term_int()
 
 int term_float()
 {
-    printf("term_float\n");
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_FLOAT)
     {
@@ -1082,7 +1065,6 @@ int term_float()
 
 int term_string()
 {
-    printf("term_string\n");
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_STRING)
     {
@@ -1095,7 +1077,6 @@ int term_string()
 
 int term_var_id()
 {
-    printf("term_var_id\n");
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_VAR_ID)
     {
@@ -1109,7 +1090,6 @@ int term_var_id()
 
 int term_null()
 {
-    printf("term_null\n");
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_KEYWORD)
     {
@@ -1127,7 +1107,6 @@ int term_null()
 
 int parametrs(symTable_t* Table,argumentsOfFunction_t* Arguments, func_par_t* arg)
 {
-    printf("parametrs\n");
     if (parametrs_without_epsilon(Table, Arguments, arg) == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
@@ -1137,7 +1116,6 @@ int parametrs(symTable_t* Table,argumentsOfFunction_t* Arguments, func_par_t* ar
 
 int parametrs_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* arg)
 {
-    printf("parametrs_without_eps\n");
     //DATA_TYPE 
     if(data_type() != SUCCESS)
     {
@@ -1186,7 +1164,6 @@ int parametrs_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Argument
 
 int parametrs_next(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* arg)
 {
-    printf("parametrs_next\n");
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_COMMA)
     {
@@ -1204,7 +1181,6 @@ int parametrs_next(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par
 
 int data_type()
 {
-    printf("data_type\n");
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_KEYWORD)
     {
@@ -1231,7 +1207,6 @@ int data_type()
 
 int func_type()
 {
-    printf("func_type\n");
     get_unprocessed_token();
     if(scanner_result.type != TOKEN_KEYWORD)
     {
