@@ -297,7 +297,8 @@ void printTree(ast_t *tree)
     
     case assigment_func:
         printf("Node type = AssigmentFunc\n");
-        printf("Target variable name = %s\n", tree->thiscommand.assigment_func.target->name->string);
+        if (tree->thiscommand.assigment_expression.target != NULL)
+            printf("Target variable name = %s\n", tree->thiscommand.assigment_func.target->name->string);
         printf("Function name = %s\n", tree->thiscommand.assigment_func.func->name->string);
         break;
     
@@ -329,7 +330,8 @@ void printTree(ast_t *tree)
 
     case return_statement:
         printf("Node type = Return\n");
-        printTree(tree->thiscommand.return_statement.expression);
+        if (tree->thiscommand.return_statement.expression != NULL)
+            printTree(tree->thiscommand.return_statement.expression);
         break;
 
     case expression:
