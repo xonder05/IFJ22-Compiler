@@ -608,6 +608,163 @@ RETURN\n\
 label $&convert_for_conc_error\n\
 EXIT int@7\n"
 
+#define CONVERT_FOR_GL "label $&convert_for_gl\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+DEFVAR LF@&type1\n\
+DEFVAR LF@&type2\n\
+POPS LF@&op1\n\
+POPS LF@&op2\n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+JUMPIFEQ $&convert_for_gl_end LF@&type1 LF@&type2\n\
+JUMPIFEQ $&convert_for_gl_1nil LF@&type1 string@nil\n\
+JUMPIFEQ $&convert_for_gl_2nil LF@&type2 string@nil\n\
+JUMPIFEQ $&convert_for_gl_1string LF@&type1 string@string\n\
+JUMPIFEQ $&convert_for_gl_2string LF@&type2 string@string\n\
+JUMPIFEQ $&convert_for_gl_1int LF@&type1 string@int\n\
+JUMPIFEQ $&convert_for_gl_2int LF@&type2 string@int\n\
+#jinak nejaka chyba(nemelo by nastat)\n\
+EXIT int@7\n\
+\n\
+\n\
+label $&convert_for_gl_end\n\
+PUSHS LF@&op2\n\
+PUSHS LF@&op1\n\
+POPFRAME\n\
+RETURN\n\
+#nilx || xnil\n\
+label $&convert_for_gl_1nil\n\
+label $&convert_for_gl_2nil\n\
+EXIT int@7\n\
+\n\
+label $&convert_for_gl_1string\n\
+label $&convert_for_gl_2string\n\
+EXIT int@7\n\
+\n\
+label $&convert_for_gl_1int\n\
+INT2FLOAT LF@&op1 LF@&op1\n\
+JUMP $&convert_for_gl_end \n\
+label $&convert_for_gl_2int\n\
+INT2FLOAT LF@&op2 LF@&op2\n\
+JUMP $&convert_for_gl_end\n"
+
+#define CONVERT_FOR_GL_EQUAL "label $&convert_for_gl_equal\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@&op1\n\
+DEFVAR LF@&op2\n\
+DEFVAR LF@&type1\n\
+DEFVAR LF@&type2\n\
+POPS LF@&op1\n\
+POPS LF@&op2\n\
+TYPE LF@&type1 LF@&op1\n\
+TYPE LF@&type2 LF@&op2\n\
+JUMPIFEQ $&convert_for_gl_equal_end LF@&type1 LF@&type2\n\
+JUMPIFEQ $&convert_for_gl_equal_1nil LF@&type1 string@nil\n\
+JUMPIFEQ $&convert_for_gl_equal_2nil LF@&type2 string@nil\n\
+JUMPIFEQ $&convert_for_gl_equal_1string LF@&type1 string@string\n\
+JUMPIFEQ $&convert_for_gl_equal_2string LF@&type2 string@string\n\
+JUMPIFEQ $&convert_for_gl_equal_1int LF@&type1 string@int\n\
+JUMPIFEQ $&convert_for_gl_equal_2int LF@&type2 string@int\n\
+#jinak nejaka chyba(nemelo by nastat)\n\
+EXIT int@7\n\
+\n\
+label $&convert_for_gl_equal_end\n\
+PUSHS LF@&op2\n\
+PUSHS LF@&op1\n\
+POPFRAME\n\
+RETURN\n\
+#nilx\n\
+label $&convert_for_gl_equal_1nil\n\
+JUMPIFEQ $&convert_for_gl_equal_1nil2int LF@&type2 string@int\n\
+JUMPIFEQ $&convert_for_gl_equal_1nil2float LF@&type2 string@float\n\
+#2 je string\n\
+#skocim na pravdu kdyz je prazdny\n\
+JUMPIFEQ $&convert_for_gl_equal_1nil2int0 lf@&op2 string@\n\
+#jijnak null na ""\n\
+MOVE LF@&op1 string@\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+\n\
+#nilxint\n\
+label $&convert_for_gl_equal_1nil2int\n\
+JUMPIFEQ $&convert_for_gl_equal_1nil2int0 LF@&op2 int@0\n\
+MOVE LF@&op2 bool@true\n\
+MOVE LF@&op1 bool@false\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+#nilx0\n\
+label $&convert_for_gl_equal_1nil2int0\n\
+MOVE LF@&op1 int@1\n\
+MOVE LF@&op2 int@1\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+#nilxfloat\n\
+label $&convert_for_gl_equal_1nil2float\n\
+JUMPIFEQ $&convert_for_gl_equal_1nil2float0 LF@&op2 float@0x0p+0\n\
+MOVE LF@&op2 bool@true\n\
+MOVE LF@&op1 bool@false\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+#nilx0.0\n\
+label $&convert_for_gl_equal_1nil2float0\n\
+MOVE LF@&op1 int@1\n\
+MOVE LF@&op2 int@1\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+########dryhy je nil\n\
+#Xnil\n\
+label $&convert_for_gl_equal_2nil\n\
+JUMPIFEQ $&convert_for_gl_equal_2nil1int LF@&type1 string@int\n\
+JUMPIFEQ $&convert_for_gl_equal_2nil1float LF@&type1 string@float\n\
+#1 je string\n\
+#skocim na pravdu kdyz je prazdny\n\
+JUMPIFEQ $&convert_for_gl_equal_2nil1int0 LF@&op1 string@\n\
+#jijnak null na ""\n\
+MOVE LF@&op2 string@\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+\n\
+#intXnil\n\
+label $&convert_for_gl_equal_2nil1int\n\
+JUMPIFEQ $&convert_for_gl_equal_2nil1int0 LF@&op1 int@0\n\
+MOVE LF@&op1 bool@true\n\
+MOVE LF@&op2 bool@false\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+#0xnill\n\
+label $&convert_for_gl_equal_2nil1int0\n\
+MOVE LF@&op1 int@1\n\
+MOVE LF@&op2 int@1\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+#floatxnil\n\
+label $&convert_for_gl_equal_2nil1float\n\
+JUMPIFEQ $&convert_for_gl_equal_2nil1float0 LF@&op1 float@0x0p+0\n\
+MOVE LF@&op1 bool@true\n\
+MOVE LF@&op2 bool@false\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+#0.0xnil\n\
+label $&convert_for_gl_equal_2nil1float0\n\
+MOVE LF@&op1 int@1\n\
+MOVE LF@&op2 int@1\n\
+JUMP $&convert_for_gl_equal_end\n\
+\n\
+label $&convert_for_gl_equal_1string\n\
+label $&convert_for_gl_equal_2string\n\
+EXIT int@7\n\
+\n\
+label $&convert_for_gl_equal_1int\n\
+INT2FLOAT LF@&op1 LF@&op1\n\
+JUMP $&convert_for_gl_equal_end \n\
+label $&convert_for_gl_equal_2int\n\
+INT2FLOAT LF@&op2 LF@&op2\n\
+JUMP $&convert_for_gl_equal_end \n"
+
 #define DEF_CONVERT "label $&convert\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
@@ -741,6 +898,14 @@ void def_built_in(inst_list_t *list)
     dyn_string_clear(string);
 
     dyn_string_add_string(string,DEF_CONVERT_FOR_CONC);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
+
+    dyn_string_add_string(string,CONVERT_FOR_GL);
+    instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
+    dyn_string_clear(string);
+
+    dyn_string_add_string(string,CONVERT_FOR_GL_EQUAL);
     instListInsertLast(list,func_beg,empty); instListInsertLast(list,func_body,string);instListInsertLast(list,func_end,empty);
     dyn_string_clear(string);
 

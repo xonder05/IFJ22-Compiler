@@ -120,7 +120,7 @@ int generate(ast_t *tree)
     return 0;
 }
 
-//TODO body of function
+//TODO definice uvnitr fce
 int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generated_t *var_list)
 {  
     int error_code = 0;
@@ -204,6 +204,11 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
             dyn_string_add_char(label_string,'\n');
             dyn_string_add_string(label_string,"JUMPIFEQ $ParCheckEnd");
             unsigned_int_to_string(label_string,i);
+            if(node->declare_func.func_name->context != NULL)
+            {
+                dyn_string_add_string(label_string,node->declare_func.func_name->context->string);
+            }
+            dyn_string_add_string(label_string,node->declare_func.func_name->name->string);
             dyn_string_add_string(label_string," LF@type_var string@");
 
             switch (node->declare_func.func_name->info.function.arguments.TypesOfArguments[i])
@@ -227,6 +232,11 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
             dyn_string_add_string(label_string,"EXIT int@4\n");
             dyn_string_add_string(label_string,"LABEL $ParCheckEnd");
             unsigned_int_to_string(label_string,i);
+            if(node->declare_func.func_name->context != NULL)
+            {
+                dyn_string_add_string(label_string,node->declare_func.func_name->context->string);
+            }
+            dyn_string_add_string(label_string,node->declare_func.func_name->name->string);
             dyn_string_add_char(label_string,'\n');
 
 
@@ -234,10 +244,30 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
         dyn_string_add_string(label_string,"###################PARAM TYPE CONTROL END####################\n");
 
     }
-    // test
-    // dyn_string_add_string(label_string,"\n");
+    //tady def promene a dat do nich param hodnoty
+   /* if(node->declare_func.func_name->info.function.arguments.countOfArguments > 0)
+    {
+        for(int i = 1; i <= node->declare_func.func_name->info.function.arguments.countOfArguments;i++) 
+       {
 
-    // test
+            // DEFVAR LF@param1
+            dyn_string_add_string(label_string,"DEFVAR LF@");
+            dyn_string_add_string(label_string,node->declare_func.func_name->name->string);
+            // dyn_string_add_string(label_string,node->declare_func.func_name->info.function.arguments.);
+
+            unsigned_int_to_string(label_string,i);
+            dyn_string_add_char(label_string,'\n'); 
+
+            // MOVE LF@param1 LF@%1
+            dyn_string_add_string(label_string,"MOVE LF@param");
+            unsigned_int_to_string(label_string,i);
+            dyn_string_add_string(label_string," LF@%");
+            
+            unsigned_int_to_string(label_string,i);
+            dyn_string_add_char(label_string,'\n'); 
+
+       }
+    }*/
 
     instListInsertLast(func_list,func_beg,label_string);
 
@@ -766,15 +796,19 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
         dyn_string_add_string(express,"CALL $&not_equal_type\n");
         break;
     case Greater:
+        dyn_string_add_string(express,"CALL $&convert_for_gl\n");
         dyn_string_add_string(express,"GTS\n");
         break;
     case Lesser:
+        dyn_string_add_string(express,"CALL $&convert_for_gl\n");
         dyn_string_add_string(express,"LTS\n");
         break;
     case GreaterEqual:
+        dyn_string_add_string(express,"CALL $&convert_for_gl_equal\n");
         dyn_string_add_string(express,"CALL $&greater_equal\n");
         break;
     case LesserEqual:
+        dyn_string_add_string(express,"CALL $&convert_for_gl_equal\n");
         dyn_string_add_string(express,"CALL $&lesser_equal\n");
         break;
     case Error:
