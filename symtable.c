@@ -277,9 +277,9 @@ bool insertPremadeFunction(symTable_t* Table)
 		return false;
 	}
 	
-
+	dyn_string_clear(FuncName);
 	// function readf() : ?float
-		if (dyn_string_add_string(FuncName, "readf") == false)
+	if (dyn_string_add_string(FuncName, "readf") == false)
 	{
 		dyn_string_free(FuncName);
 		return false;
