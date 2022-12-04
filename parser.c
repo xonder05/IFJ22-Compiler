@@ -40,7 +40,7 @@ int command_call_function(symTable_t* Table, stackAST_t* stack);
 int command_return(symTable_t* Table, stackAST_t* stack);
 int call_function_or_expresion(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* stack); //CALL_FUNCTION_OR_EXPRESION
 int call_function(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* stack);
-int parametrs(symTable_t* Table, argumentsOfFunction_t* Arguments);
+int parametrs(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* arg);
 int term(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* FuncParam);
 int term_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* FuncParam);
 int term_int();
@@ -49,8 +49,8 @@ int term_string();
 int term_var_id();
 int term_null();
 int term_next(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* FuncParam);
-int parametrs_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments);
-int parametrs_next(symTable_t* Table, argumentsOfFunction_t* Arguments);
+int parametrs_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* arg);
+int parametrs_next(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* arg);
 
 int data_type();
 int func_type();
@@ -248,9 +248,10 @@ int delcare_function(symTable_t* Table, stackAST_t* stack)
 
     //SymTable: arguments
     argumentsOfFunction_t NewArguments = initArguments();
+    func_par_t* arg = parInit();
 
     //PARAMETERS
-    if(parametrs(Table, &NewArguments) != SUCCESS)
+    if(parametrs(Table, &NewArguments, arg) != SUCCESS)
     {
         return FIAL_IN_MIDDLE;
     }
@@ -345,6 +346,7 @@ int delcare_function(symTable_t* Table, stackAST_t* stack)
     {
         exit(-1);
     }
+    NewFuncAST->thiscommand.declare_func.arguments = arg;
 
     addNextCommandToTop(stack, NewFuncAST);
     pushStackAST(stack, StartOfFunc);
@@ -1123,17 +1125,17 @@ int term_null()
     return SUCCESS;
 }
 
-int parametrs(symTable_t* Table,argumentsOfFunction_t* Arguments)
+int parametrs(symTable_t* Table,argumentsOfFunction_t* Arguments, func_par_t* arg)
 {
     printf("parametrs\n");
-    if (parametrs_without_epsilon(Table, Arguments) == FIAL_IN_MIDDLE)
+    if (parametrs_without_epsilon(Table, Arguments, arg) == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
     }
     return SUCCESS;
 }
 
-int parametrs_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments)
+int parametrs_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* arg)
 {
     printf("parametrs_without_eps\n");
     //DATA_TYPE 
@@ -1170,8 +1172,9 @@ int parametrs_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Argument
             freeSymTable(Table);
             call_error(OTHERS_ERROR);
     }
+    addParametrer(arg, NewVar, NULL, NULL, NULL);
 
-    int result = parametrs_next(Table, Arguments);
+    int result = parametrs_next(Table, Arguments, arg);
     if(result == FIAL_IN_MIDDLE)
     {
         return FIAL_IN_MIDDLE;
@@ -1181,7 +1184,7 @@ int parametrs_without_epsilon(symTable_t* Table, argumentsOfFunction_t* Argument
 
 }
 
-int parametrs_next(symTable_t* Table, argumentsOfFunction_t* Arguments)
+int parametrs_next(symTable_t* Table, argumentsOfFunction_t* Arguments, func_par_t* arg)
 {
     printf("parametrs_next\n");
     get_unprocessed_token();
@@ -1191,7 +1194,7 @@ int parametrs_next(symTable_t* Table, argumentsOfFunction_t* Arguments)
     }
     scanner_result_is_processed = true;
 
-    if(parametrs_without_epsilon(Table, Arguments) != SUCCESS)
+    if(parametrs_without_epsilon(Table, Arguments, arg) != SUCCESS)
     {
         return FIAL_IN_MIDDLE;
     }

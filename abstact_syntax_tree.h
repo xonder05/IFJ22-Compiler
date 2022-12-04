@@ -48,7 +48,7 @@ union node{
     bool prologSuccess;
     struct {symbol_t* target; ast_t *expression;} assigment_expression;
     struct {symbol_t* target; symbol_t* func; func_par_t* parameters;} assigment_func;
-    struct {symbol_t* func_name; ast_t *func_body;} declare_func;
+    struct {symbol_t* func_name; ast_t *func_body; func_par_t* arguments;} declare_func;
     struct {ast_t *expression; ast_t *true_block; ast_t *false_block;} if_statement;
     struct {ast_t *expression; ast_t *while_block; } while_statement;
     struct {operator operator; exp_subtree_t *left; exp_subtree_t *right;} expression;
