@@ -953,7 +953,7 @@ int generate_if(node_t *node, inst_list_t *main_body_list,int *if_count,inst_lis
     dyn_string_add_string(if_code,label_base_name->string);
     dyn_string_add_string(if_code,"true\n");
 
-    error_code = gen_from_ass(node->if_statement.false_block,main_body_list,func_list,if_count,var_list);
+    error_code = gen_from_ass(node->if_statement.true_block,main_body_list,func_list,if_count,var_list);
     if(error_code)
     {
         dyn_string_free(if_code);

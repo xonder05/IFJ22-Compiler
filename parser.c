@@ -501,7 +501,12 @@ int command_variable(symTable_t* Table, stackAST_t* stack)
         return FIAL_IN_MIDDLE;
     }
     
-    scanner_result_is_processed = true; //EXPRESION!!!
+    scanner_result_is_processed = true; 
+
+    if (ReturnType == NULL_TYPE)
+    {
+        call_error(SEMNATIC_OTHER_ERROR);
+    }
 
 
     //TOKEN_SEMICOLON
@@ -843,6 +848,7 @@ int call_function(symTable_t* Table, VariableType_t* RetrunType, stackAST_t* sta
         NewFunc->info.function.defined = false;
         NewFunc->info.function.returnType = ERROR_TYPE;
     }
+    *RetrunType = NewFunc->info.function.returnType;
 
     // TOKEN_L_PAR 
     get_unprocessed_token();
