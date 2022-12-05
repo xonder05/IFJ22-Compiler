@@ -284,8 +284,10 @@ token_t get_token()
             
             case STATE_LINE_COMMENT:
                 if(c == EOF){
-                    state = STATE_BLANK0;
-                    ungetc(c,stdin);
+                    // state = STATE_BLANK0;
+                    //ungetc(c,stdin);
+                    token.type = TOKEN_END;
+                    return token;
                 }
                 else if(c == '\n'){
                     state = STATE_START;

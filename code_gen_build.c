@@ -75,7 +75,7 @@ void instInsertBeforeWhile( inst_list_t *list, block_type type, Dyn_String *code
 		return;
 	}
 
-    while(tmp != NULL && tmp->type != while_loop_start)
+    while(tmp != NULL && tmp->type != while_loop_start && tmp->type != if_cond)
     {
         tmp = tmp -> previous;
     }
@@ -87,6 +87,48 @@ void instInsertBeforeWhile( inst_list_t *list, block_type type, Dyn_String *code
     //nasli jsme while start
     else
     {
+        int while_count = 0;
+        int if_count = 0;
+        tmp = list -> last;
+        while(tmp != NULL)
+        {            
+            if(tmp->type == while_loop_start)
+            {
+                while_count++;
+            }
+            if(tmp->type == while_loop_end)
+            {
+                while_count--;
+            }
+            if(tmp->type == if_cond)
+            {
+                if_count++;
+            }            
+            if(tmp->type == if_false)
+            {
+                if_count--;
+            }
+            tmp = tmp -> previous;
+        }
+        tmp = list -> last;
+        if(if_count < 0 || while_count < 0)
+        {
+            return;//error
+        }
+        while(if_count != 0 ||  while_count != 0)
+        {
+
+            if(tmp->type == if_cond)
+            {
+                if_count--;
+            }
+            if(tmp->type == while_loop_start)
+            {
+                while_count--;
+            }
+            tmp = tmp -> previous;
+
+        }
         inst_list_elem_ptr elem = create_elem(type, code);
         //kdyz je while prvni v listu
         if(tmp->previous == NULL)
