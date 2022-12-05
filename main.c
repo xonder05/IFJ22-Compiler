@@ -12,10 +12,10 @@ int main ()
     parse(Table, AST);
 
 
-    printf("\n\nstart\n\n");
-    printTree(AST);
+    //printf("\n\nstart\n\n");
+  // printTree(AST);
 
-    printf("\n\n Gen codu \n\n");
+    //printf("\n\n Gen codu \n\n");
 
     generate(AST);
 

@@ -1,12 +1,12 @@
 #include "abstact_syntax_tree.h"
+#include "error.h"
 
 ast_t* createRootNode(bool prologSuccess)
 {
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
     if (strom == NULL) 
     { 
-        fprintf(stderr, "malloc fail\n"); 
-        return NULL;
+        call_error(OTHERS_ERROR);
     }
 
     strom->type = root;
@@ -27,8 +27,7 @@ ast_t* createAssigmentExpNode(symbol_t* target, ast_t* expression)
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
     if (strom == NULL) 
     { 
-        fprintf(stderr, "mallock fail\n"); 
-        return NULL;
+        call_error(OTHERS_ERROR);;
     }
 
     strom->type = assigment_expression;
@@ -50,8 +49,7 @@ ast_t* createAssigmentFuncNode(symbol_t* target, symbol_t* func)
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
     if (strom == NULL) 
     { 
-        fprintf(stderr, "mallock fail\n"); 
-        return NULL;
+        call_error(OTHERS_ERROR);
     }
 
     strom->type = assigment_func;
@@ -73,8 +71,7 @@ ast_t* createDeclareFuncNode(symbol_t* func_name, ast_t *func_body)
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
     if (strom == NULL) 
     { 
-        fprintf(stderr, "mallock fail\n"); 
-        return NULL;
+        call_error(OTHERS_ERROR);
     }
 
     strom->type = declare_func;
@@ -96,8 +93,7 @@ ast_t* createIfNode(ast_t *expression, ast_t *true_block, ast_t *false_block)
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
     if (strom == NULL) 
     { 
-        fprintf(stderr, "mallock fail\n"); 
-        return NULL;
+        call_error(OTHERS_ERROR);
     }
 
     strom->type = if_statement;
@@ -120,8 +116,7 @@ ast_t* createWhileNode(ast_t *expression, ast_t *while_block)
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
     if (strom == NULL) 
     { 
-        fprintf(stderr, "mallock fail\n"); 
-        return NULL;
+        call_error(OTHERS_ERROR);
     }
 
     strom->type = while_statement;
@@ -143,8 +138,7 @@ ast_t* createExpressionNode(operator operator, exp_subtree_t *left, exp_subtree_
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
     if (strom == NULL) 
     { 
-        fprintf(stderr, "mallock fail\n"); 
-        return NULL;
+        call_error(OTHERS_ERROR);
     }
 
     strom->type = expression;
@@ -167,8 +161,7 @@ ast_t* createReturnNode(ast_t *expression)
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
     if (strom == NULL) 
     { 
-        fprintf(stderr, "mallock fail\n"); 
-        return NULL;
+        call_error(OTHERS_ERROR);
     }
 
     strom->type = return_statement;
@@ -438,8 +431,7 @@ exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_
     exp_subtree_t *tree = malloc(sizeof(exp_subtree_t));
     if (tree == NULL) 
     { 
-        fprintf(stderr, "malloc error\n"); 
-        return NULL; 
+        call_error(OTHERS_ERROR);
     }
     
     if (symbol != NULL && subtree == NULL && imm_int == NULL && imm_float == NULL && imm_string == NULL)
@@ -477,8 +469,7 @@ exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_
     }
     else
     {
-        fprintf(stderr, "spatna kombinace vstupnich parametrů\n");
-        return NULL;
+        call_error(OTHERS_ERROR);
     }
     return tree;
 }
@@ -516,8 +507,7 @@ func_par_t* parInit()
     func_par_t *parameters = malloc(sizeof(func_par_t));
     if (parameters == NULL) 
     { 
-        fprintf(stderr, "malloc error\n"); 
-        return NULL; 
+        call_error(OTHERS_ERROR); 
     }
 
     parameters->type = first;
@@ -541,8 +531,7 @@ func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, long int* in
         parameters->next = malloc(sizeof(func_par_t));
         if (parameters->next == NULL) 
         { 
-            fprintf(stderr, "malloc error\n"); 
-            return NULL; 
+            call_error(OTHERS_ERROR);
         }
         else 
         { 

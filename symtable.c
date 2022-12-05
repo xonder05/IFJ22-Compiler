@@ -350,7 +350,7 @@ bool insertPremadeFunction(symTable_t* Table)
 	}
 
 	Func->info.function.arguments = initArguments();
-	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_FLOAT);
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_NULL);
 	Func->info.function.defined = true;
 	Func->info.function.returnType = FLOAT_TYPE;
 
@@ -380,7 +380,7 @@ bool insertPremadeFunction(symTable_t* Table)
 	}
 
 	Func->info.function.arguments = initArguments();
-	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_INT);
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_NULL);
 	Func->info.function.defined = true;
 	Func->info.function.returnType = INT_TYPE;
 
@@ -392,7 +392,37 @@ bool insertPremadeFunction(symTable_t* Table)
 	}
 
 	
+	
 	dyn_string_clear(FuncName);
+	//function strval(term) : string
+	if (dyn_string_add_string(FuncName, "strval") == false)
+	{
+		dyn_string_free(FuncName);
+		return false;
+	}
+	Func = initSymbol(TYPE_FUNCTION, FuncName, NULL);
+	if (Func == NULL)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);
+		return false;
+	}
+
+	Func->info.function.arguments = initArguments();
+	addArgumentByKeyword(&Func->info.function.arguments, KEYWORD_NULL);
+	Func->info.function.defined = true;
+	Func->info.function.returnType = STRING_TYPE;
+
+	if (insertSymTable(Table, Func) == false)
+	{
+		freeSymbol(Func);
+		dyn_string_free(FuncName);	
+		return false;
+	}
+
+	
+	dyn_string_clear(FuncName);
+
 	// function strlen(string $𝑠) : int
 	if (dyn_string_add_string(FuncName, "strlen") == false)
 	{

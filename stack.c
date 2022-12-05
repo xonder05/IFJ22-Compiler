@@ -1,12 +1,12 @@
 #include "stack.h"
+#include "error.h"
 
 stack_t* initStack(stack_t *stack)
 {
     stack = malloc(sizeof(struct stack));
     if (stack == NULL) 
     { 
-        fprintf(stderr, "malloc error\n"); 
-        return NULL; 
+        call_error(OTHERS_ERROR); 
     }
 
     stack->top = NULL;
@@ -45,8 +45,7 @@ stack_t* pushStack(stack_t *stack, stackItem_t inputItem)
     stackItem_t *item = malloc(sizeof(struct stackItem));
     if (item == NULL) 
     { 
-        fprintf(stderr, "malloc error\n"); 
-        return NULL; 
+        call_error(OTHERS_ERROR);
     }
 
     *item = inputItem;

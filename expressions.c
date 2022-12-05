@@ -1,4 +1,5 @@
 #include "expressions.h"
+#include "error.h"
 
 
 VariableType_t convertImmTypeToVariableType(imm_type_t imm)
@@ -27,8 +28,7 @@ VariableType_t semanticCheck(ast_t* tree)
 {
     if (tree == NULL)
     {
-        fprintf(stderr, "tree is null\n"); 
-        return ERROR_TYPE; 
+        call_error(OTHERS_ERROR);
     }
 
     //only one operator
@@ -276,7 +276,7 @@ stackItem_t convertrToken(token_t token, symTable_t* table)
             symbol = findSymTableInCurentConxtext(table, token.string);
             if (symbol == NULL)
             {
-                fprintf(stderr, "undefined variable\n");
+                call_error(SEMANTIC_VAR_ERROR);
                 input.type = NOT_ALLOWED_CHAR;
             }
             else
@@ -295,12 +295,12 @@ stackItem_t convertrToken(token_t token, symTable_t* table)
             }
             else
             {            
-                fprintf(stderr, "token not allowed in expression\n");
+                call_error(SYNTAX_ERROR);
                 input.type = NOT_ALLOWED_CHAR;
                 break;
             }
         default:
-            fprintf(stderr, "token not allowed in expression\n");
+            call_error(SYNTAX_ERROR);
             input.type = NOT_ALLOWED_CHAR;
         }
     return input;
@@ -352,8 +352,7 @@ int insertHandle(stack_t *stack)
     stackItem_t *ptr = malloc(sizeof(stackItem_t));
     if (ptr == NULL) 
     {
-        fprintf(stderr, "malloc error\n"); 
-        return 1;
+        call_error(OTHERS_ERROR);
     }
     
     int i = 0;
@@ -457,7 +456,7 @@ int reduce(stack_t *stack)
             stackItem_t right = topStack(stack, 2);
             stackItem_t op = topStack(stack, 1);
 
-            if (convertInputCharsToOperator(op.type) == -1) { fprintf(stderr, "convert fail\n"); exit(0);}
+            if (convertInputCharsToOperator(op.type) == -1) { call_error(SEMANTIC_COMPABILITY_ERROR);}
             ast_t* node = createExpressionNode(convertInputCharsToOperator(op.type), left.data, right.data);
             
             stackItem_t item;
@@ -737,8 +736,7 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
 {
     if (table == NULL) 
     {
-        fprintf(stderr, "symtable is null\n");
-        return NULL; 
+        call_error(OTHERS_ERROR);
     }
     
     //init
@@ -832,8 +830,7 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
 
         default :
             fail = true;
-            fprintf(stderr, "char not allowed on stack\n");
-            break;
+            call_error(SEMANTIC_COMPABILITY_ERROR);
         }
         if (fail == true)
         {
@@ -867,14 +864,12 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
     {
         if (stack->items == 1 && stack->top->type == STARTEND)
         {
-            fprintf(stderr, "expression none\n");
             diposeExpSubtree(stack->top->data);
             disposeStack(stack);
             *result_err = 0;
             return NULL;
         }
 
-        fprintf(stderr, "expression fail\n");
         diposeExpSubtree(stack->top->data);
         disposeStack(stack);
         *result_err = -1;
@@ -900,22 +895,11 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
             result = item.data->data.exp;
             break;
         default:
-            fprintf(stderr,"error\n"); //should never happen
-            exit(0);
+            call_error(OTHERS_ERROR);
             break;
         }
 
-        /*
-        if (semanticCheck(result) == ERROR_TYPE)
-        {
-            fprintf(stderr, "\nsemantic error\n\n");
-            return NULL;
-        }
-        printf("\nsemantic success\n\n");
-        */
 
-
-        printf("expression success\n");
         disposeStack(stack);
         *result_err = 1;
         return result;

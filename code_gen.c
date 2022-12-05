@@ -3,6 +3,7 @@
 #include "code_gen.h"
 #include "dyn_string.h"
 #include "abstact_syntax_tree.h"
+#include "error.h"
 #include <string.h>
 
 //returns 0 on succes, error code on failure
@@ -80,7 +81,7 @@ int generate(ast_t *tree)
         isntListDispose(&main_list);
         isntListDispose(&main_body_list);
         isntListDispose(&func_list);
-        return error_code;
+        call_error(OTHERS_ERROR);
     }
 
     //insert header to main_list
