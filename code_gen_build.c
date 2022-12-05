@@ -298,7 +298,7 @@ LABEL $int_end\n\
 POPFRAME\n\
 RETURN\n"
 
-#define DEF_STRING_VAL "label $stringval\n\
+#define DEF_STRING_VAL "label $strval\n\
 PUSHFRAME\n\
 DEFVAR LF@param1\n\
 MOVE LF@param1 nil@nil\n\

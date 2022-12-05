@@ -22,7 +22,10 @@ typedef enum VariableType
     INT_TYPE,
     STRING_TYPE,
     NULL_TYPE,
-    ERROR_TYPE
+    ERROR_TYPE,
+    FLOAT_NULL_TYPE,
+    INT_NULL_TYPE,
+    STRING_NULL_TYPE,
 } VariableType_t;
 
 typedef struct argumentsOfFunction

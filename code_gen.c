@@ -196,7 +196,7 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
                 dyn_string_add_string(label_string,"nil@nil\n");
                 break;         
             default:
-                dyn_string_add_string(label_string,"ni@nill\n");
+                dyn_string_add_string(label_string,"nil@nil\n");
                 break;
             }
 
@@ -215,12 +215,15 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
             switch (node->declare_func.func_name->info.function.arguments.TypesOfArguments[i])
             {
             case FLOAT_TYPE:
+            case FLOAT_NULL_TYPE:
                 dyn_string_add_string(label_string,"float\n");
                 break;
             case INT_TYPE:
+            case INT_NULL_TYPE:
                 dyn_string_add_string(label_string,"int\n");
                 break;
             case STRING_TYPE:
+            case STRING_NULL_TYPE:
                 dyn_string_add_string(label_string,"string\n");
                 break;
             case NULL_TYPE:
@@ -230,6 +233,19 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
                 dyn_string_add_string(label_string,"nil\n");
                 break;
             }
+
+            if(node->declare_func.func_name->info.function.arguments.TypesOfArguments[i] == INT_NULL_TYPE || node->declare_func.func_name->info.function.arguments.TypesOfArguments[i] == FLOAT_NULL_TYPE ||node->declare_func.func_name->info.function.arguments.TypesOfArguments[i] == STRING_NULL_TYPE)
+            {
+                dyn_string_add_string(label_string,"JUMPIFEQ $ParCheckEnd");
+                unsigned_int_to_string(label_string,i);
+                if(node->declare_func.func_name->context != NULL)
+                {
+                    dyn_string_add_string(label_string,node->declare_func.func_name->context->string);
+                }
+                dyn_string_add_string(label_string,node->declare_func.func_name->name->string);
+                dyn_string_add_string(label_string," LF@type_var string@nil\n");
+            }
+
             dyn_string_add_string(label_string,"EXIT int@4\n");
             dyn_string_add_string(label_string,"LABEL $ParCheckEnd");
             unsigned_int_to_string(label_string,i);
@@ -311,12 +327,15 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
     switch (node->declare_func.func_name->info.function.returnType)
     {
     case FLOAT_TYPE:
+    case FLOAT_NULL_TYPE:
         dyn_string_add_string(end,"float\n");
         break;
     case INT_TYPE:
+    case INT_NULL_TYPE:
         dyn_string_add_string(end,"int\n");
         break;
     case STRING_TYPE:
+    case STRING_NULL_TYPE:
         dyn_string_add_string(end,"string\n");
         break;
     case NULL_TYPE:
@@ -326,6 +345,13 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
         dyn_string_add_string(end,"error\n");
         break;
     }
+    if(node->declare_func.func_name->info.function.returnType == STRING_NULL_TYPE || node->declare_func.func_name->info.function.returnType == INT_NULL_TYPE || node->declare_func.func_name->info.function.returnType == FLOAT_NULL_TYPE)
+    {
+        dyn_string_add_string(end,"JUMPIFEQ $ReturnTypeCheck");
+        dyn_string_add_string(end,node->declare_func.func_name->name->string);
+        dyn_string_add_string(end," LF@type_var_ret string@nil\n");
+    }
+
     dyn_string_add_string(end,"EXIT int@4\n");
     dyn_string_add_string(end,"LABEL $ReturnTypeCheck");
     dyn_string_add_string(end,node->declare_func.func_name->name->string);

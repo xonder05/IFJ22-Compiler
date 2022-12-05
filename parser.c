@@ -301,19 +301,25 @@ int delcare_function(symTable_t* Table, stackAST_t* stack)
     switch(scanner_result.keyword)
     {
         case KEYWORD_FLOAT:
+            NewFunction->info.function.returnType = FLOAT_TYPE;
+		    break;
 		case KEYWORD_Q_FLOAT:
-		NewFunction->info.function.returnType = FLOAT_TYPE;
-		break;
+		    NewFunction->info.function.returnType = FLOAT_NULL_TYPE;
+		    break;
 
 		case KEYWORD_INT:
+            NewFunction->info.function.returnType = INT_TYPE;
+		    break;
 		case KEYWORD_Q_INT:
-		NewFunction->info.function.returnType = INT_TYPE;
-		break;
+		    NewFunction->info.function.returnType = INT_NULL_TYPE;
+		    break;
 
 		case KEYWORD_STRING:
+            NewFunction->info.function.returnType = STRING_TYPE;
+		    break;
 		case KEYWORD_Q_STRING:
-		NewFunction->info.function.returnType = STRING_TYPE;
-		break;
+		    NewFunction->info.function.returnType = STRING_NULL_TYPE;
+		    break;
 
         case KEYWORD_VOID:
         NewFunction->info.function.returnType = NULL_TYPE;

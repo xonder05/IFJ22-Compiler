@@ -644,19 +644,25 @@ bool addArgumentByKeyword(argumentsOfFunction_t* Arguments, int Keyword)
 	switch (Keyword)
 	{
 		case KEYWORD_FLOAT:
+			Arguments->TypesOfArguments[Arguments->countOfArguments] = FLOAT_TYPE;
+			break;
 		case KEYWORD_Q_FLOAT:
-		Arguments->TypesOfArguments[Arguments->countOfArguments] = FLOAT_TYPE;
-		break;
+			Arguments->TypesOfArguments[Arguments->countOfArguments] = FLOAT_NULL_TYPE;
+			break;
 
 		case KEYWORD_INT:
+			Arguments->TypesOfArguments[Arguments->countOfArguments] = INT_TYPE;
+			break;
 		case KEYWORD_Q_INT:
-		Arguments->TypesOfArguments[Arguments->countOfArguments] = INT_TYPE;
-		break;
+			Arguments->TypesOfArguments[Arguments->countOfArguments] = INT_NULL_TYPE;
+			break;
 
 		case KEYWORD_STRING:
+			Arguments->TypesOfArguments[Arguments->countOfArguments] = STRING_TYPE;
+			break;
 		case KEYWORD_Q_STRING:
-		Arguments->TypesOfArguments[Arguments->countOfArguments] = STRING_TYPE;
-		break;
+			Arguments->TypesOfArguments[Arguments->countOfArguments] = STRING_NULL_TYPE;
+			break;
 	}
 	return true;
 }
