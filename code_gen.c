@@ -372,12 +372,20 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
                 if(node->assigment_func.parameters[i-1].op->context == NULL)
                 {
                     dyn_string_add_string(call,"GF@");
+                    if(par->op->context != NULL)
+                    {
+                        dyn_string_add_string(call,par->op->context->string);
+                    }
                     dyn_string_add_string(call,par->op->name->string);
                     dyn_string_add_char(call,'\n');
                 }
                 else
                 {
                     dyn_string_add_string(call,"LF@");
+                    if(par->op->context != NULL)
+                    {
+                        dyn_string_add_string(call,par->op->context->string);
+                    }
                     dyn_string_add_string(call,par->op->name->string);
                     dyn_string_add_char(call,'\n');
                 }
@@ -460,6 +468,7 @@ int generate_call_func_write(node_t *node, inst_list_t *main_body_list)
                 else
                 {
                     dyn_string_add_string(call,"LF@");
+                    dyn_string_add_string(call,par->op->context->string);
                     dyn_string_add_string(call,par->op->name->string);
                     dyn_string_add_char(call,'\n');
                 }
@@ -924,6 +933,8 @@ int generate_if(node_t *node, inst_list_t *main_body_list,int *if_count,inst_lis
     dyn_string_add_string(if_code,label_base_name->string);
     dyn_string_add_string(if_code,"true ");
     dyn_string_add_string(if_code,"TF@%retval1 bool@true\n");
+    instListInsertLast(main_body_list,if_cond,if_code);
+    dyn_string_clear(if_code);
     //false vetev
     //
     error_code = gen_from_ass(node->if_statement.false_block,main_body_list,func_list,if_count,var_list);
@@ -944,7 +955,8 @@ int generate_if(node_t *node, inst_list_t *main_body_list,int *if_count,inst_lis
     dyn_string_add_string(if_code,"LABEL ");
     dyn_string_add_string(if_code,label_base_name->string);
     dyn_string_add_string(if_code,"true\n");
-
+    instListInsertLast(main_body_list,if_false,if_code);
+    dyn_string_clear(if_code);
     error_code = gen_from_ass(node->if_statement.true_block,main_body_list,func_list,if_count,var_list);
     if(error_code)
     {
@@ -1045,6 +1057,14 @@ int generate_return(node_t *node, inst_list_t *main_body_list)
         instListInsertLast(main_body_list,return_def,return_string);
         dyn_string_free(return_string);
         return error_code;
+    }
+    else
+    {   //dam jen return a nehrotim
+        Dyn_String *return_string = dyn_string_init();
+        dyn_string_add_string(return_string,"####RETERN START######\n");
+        dyn_string_add_string(return_string,"RETURN\n");
+        instListInsertLast(main_body_list,return_def,return_string);
+        dyn_string_free(return_string);
     }
     return 0;
     

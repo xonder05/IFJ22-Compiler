@@ -22,6 +22,9 @@ typedef enum
     statement,
     label_def,
     return_def,
+    if_cond,
+    if_true,
+    if_false,
 
     final_header_block,
     final_main_label_block,
