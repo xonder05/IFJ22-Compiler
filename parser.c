@@ -105,6 +105,14 @@ int parse(symTable_t* Table, ast_t* AST)
     return 1;
 }
 
+void check_lex_error(token_t token)
+{
+    if(token.type == TOKEN_BLANK0 || token.type == TOKEN_BLANK1 ||token.type == TOKEN_BLANK2 ||token.type == TOKEN_BLANK3 )
+    {
+        call_error(LEX_ERROR);
+    }
+}
+
 void get_unprocessed_token()
 {
     if(scanner_result_is_processed)
@@ -112,8 +120,11 @@ void get_unprocessed_token()
         //free_token(scanner_result);
         scanner_result = get_token();
         scanner_result_is_processed = false;
+        check_lex_error(scanner_result);
     } 
 }
+
+
 
 //PROGRAM => TOKEN_PROLOG COMMAND_OR_DECLARE_FUNCTION TOKEN_END_TAG
 int rule_programm(symTable_t* Table, stackAST_t* stack)
@@ -121,6 +132,8 @@ int rule_programm(symTable_t* Table, stackAST_t* stack)
 
     //TOKEN_PROLOG
     get_unprocessed_token();
+    
+
 
     if(scanner_result.type != TOKEN_PROLOG)
     {

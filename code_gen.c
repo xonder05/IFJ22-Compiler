@@ -359,7 +359,7 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
     dyn_string_add_string(call,"CREATEFRAME\n");
 
     func_par_t* par = node->assigment_func.parameters;
-     
+
     for(int i = 1; i <= node->assigment_func.func->info.function.arguments.countOfArguments;i++) 
     {
         dyn_string_add_string(call,"DEFVAR TF@%");
@@ -368,14 +368,15 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
         dyn_string_add_string(call,"MOVE TF@%");
         unsigned_int_to_string(call,i);
         dyn_string_add_char(call,' ');
-
         //tedka bud imm nebo jinou var
         //jako argumenty
         // switch (node->assigment_func.func->info.function.arguments.TypesOfArguments[i-1])
         switch (par->type)
         {
             case par_op:
-                if(node->assigment_func.parameters[i-1].op->context == NULL)
+                // if(node->assigment_func.parameters[i-1].op->context == NULL)
+
+                if(par->op->context == NULL)
                 {
                     dyn_string_add_string(call,"GF@");
                     if(par->op->context != NULL)
@@ -395,6 +396,7 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
                     dyn_string_add_string(call,par->op->name->string);
                     dyn_string_add_char(call,'\n');
                 }
+
                 break;
             case par_imm:
                 switch (par->imm.type)
@@ -417,11 +419,13 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
                         dyn_string_add_char(call,'\n');
                         break;
                 }
+
                 break;       
             case par_null:
                 dyn_string_add_string(call,"nil@nil\n");
                 break;       
             default:
+
                 dyn_string_free(call);
                 return 1;
                 break;
@@ -431,6 +435,7 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
 
     }
     
+
     //CALL LABEL
     dyn_string_add_string(call,"CALL $");
     if(node->assigment_func.func->context != NULL)
@@ -982,7 +987,7 @@ int generate_if(node_t *node, inst_list_t *main_body_list,int *if_count,inst_lis
     dyn_string_add_string(if_code,label_base_name->string);
     dyn_string_add_string(if_code,"end\n");
 
-    instListInsertLast(main_body_list,if_statement,if_code);
+    instListInsertLast(main_body_list,if_end,if_code);
     dyn_string_free(if_code);
     dyn_string_free(label_base_name);
     return 0;

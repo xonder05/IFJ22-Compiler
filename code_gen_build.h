@@ -25,6 +25,7 @@ typedef enum
     if_cond,
     if_true,
     if_false,
+    if_end,
 
     final_header_block,
     final_main_label_block,

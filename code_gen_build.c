@@ -86,10 +86,12 @@ void instInsertBeforeWhile( inst_list_t *list, block_type type, Dyn_String *code
     }
     //nasli jsme while start
     else
-    {
+    {        
+
         int while_count = 0;
         int if_count = 0;
         tmp = list -> last;
+        
         while(tmp != NULL)
         {            
             if(tmp->type == while_loop_start)
@@ -98,39 +100,44 @@ void instInsertBeforeWhile( inst_list_t *list, block_type type, Dyn_String *code
             }
             if(tmp->type == while_loop_end)
             {
-                while_count--;
+                while_count = while_count - 1;
             }
             if(tmp->type == if_cond)
             {
                 if_count++;
             }            
-            if(tmp->type == if_false)
+            if(tmp->type == if_end)
             {
-                if_count--;
+                if_count = if_count - 1;
             }
             tmp = tmp -> previous;
         }
+
         tmp = list -> last;
         if(if_count < 0 || while_count < 0)
         {
+
             return;//error
         }
-        while(if_count != 0 ||  while_count != 0)
-        {
 
+        while(!(if_count ==  0 &&  while_count == 0))
+        {
             if(tmp->type == if_cond)
             {
-                if_count--;
+                if_count = if_count - 1;
             }
+
             if(tmp->type == while_loop_start)
             {
-                while_count--;
+                while_count = while_count -1;
             }
+
             tmp = tmp -> previous;
 
         }
         inst_list_elem_ptr elem = create_elem(type, code);
         //kdyz je while prvni v listu
+
         if(tmp->previous == NULL)
         {
             elem->next=list->first;
@@ -139,11 +146,13 @@ void instInsertBeforeWhile( inst_list_t *list, block_type type, Dyn_String *code
         }        
         else//jinak
         {
+
             elem ->next = tmp;
             elem ->previous= tmp ->previous;
             elem -> previous ->next = elem;
             tmp ->previous = elem;
         }
+
     }
 
 
@@ -267,21 +276,6 @@ DEFVAR LF@%retval1\n\
 MOVE LF@%retval1 nil@nil\n\
 DEFVAR LF@type_var\n\
 TYPE LF@type_var LF@param1\n\
-JUMPIFEQ $int1 LF@type_var string@string\n\
-JUMPIFEQ $int2 LF@type_var string@float\n\
-JUMPIFEQ $int3 LF@type_var string@int\n\
-JUMPIFEQ $int4 LF@type_var string@bool\n\
-JUMPIFEQ $int5 LF@type_var string@nil\n\
-EXIT int@4\n\
-LABEL $int1\n\
-EXIT int@4\n\
-LABEL $int2\n\
-FLOAT2INT LF@%retval1 LF@param1\n\
-JUMP $int_end\n\
-LABEL $int3\n\
-MOVE LF@%retval1 LF@param1\n\
-JUMP $int_end\n\
-LABEL $int4\n\
 EXIT int@4\n\
 LABEL $int5\n\
 MOVE LF@%retval1 int@0\n\
