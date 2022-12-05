@@ -313,12 +313,15 @@ int delcare_function(symTable_t* Table, stackAST_t* stack)
         break;
     }
 
-    if (insertSymTable(Table, NewFunction) == false)
+    if (findSymTable(Table, NewFunction->name, NULL) == NULL)
     {
-        freeSymTable(Table);
-        call_error(OTHERS_ERROR);
+        if (insertSymTable(Table, NewFunction) == false)
+            {
+                freeSymTable(Table);
+                call_error(OTHERS_ERROR);
+            }
     }
-
+   
 
     //TOKEN_L_BRAC 
     get_unprocessed_token();
