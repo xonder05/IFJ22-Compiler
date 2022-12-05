@@ -499,9 +499,11 @@ DEFVAR LF@&bool1\n\
 DEFVAR LF@&bool2\n\
 POPS LF@&op2\n\
 POPS LF@&op1\n\
-GT LF@&bool1 LF@&op1 LF@&op2 \n\
-EQ LF@&bool2 LF@&op1 LF@&op2 \n\
+EQ LF@&bool1 LF@&op1 LF@&op2 \n\
+JUMPIFEQ $&greater_equal_end LF@&bool1 bool@true\n\
+GT LF@&bool2 LF@&op1 LF@&op2 \n\
 OR LF@&bool1 LF@&bool1 LF@&bool2 \n\
+label $&greater_equal_end\n\
 PUSHS LF@&bool1\n\
 POPFRAME\n\
 RETURN\n"
@@ -515,9 +517,11 @@ DEFVAR LF@&bool1\n\
 DEFVAR LF@&bool2\n\
 POPS LF@&op2\n\
 POPS LF@&op1\n\
-LT LF@&bool1 LF@&op1 LF@&op2 \n\
-EQ LF@&bool2 LF@&op1 LF@&op2 \n\
+EQ LF@&bool1 LF@&op1 LF@&op2\n\
+JUMPIFEQ $&lesser_equal_end LF@&bool1 bool@true\n\
+LT LF@&bool2 LF@&op1 LF@&op2 \n\
 OR LF@&bool1 LF@&bool1 LF@&bool2 \n\
+label $&lesser_equal_end\n\
 PUSHS LF@&bool1\n\
 POPFRAME\n\
 RETURN\n"
@@ -537,7 +541,8 @@ JUMPIFEQ $&ev_if_to_ret_int LF@&typ1 string@int\n\
 JUMPIFEQ $&ev_if_to_ret_string LF@&typ1 string@string\n\
 JUMPIFEQ $&ev_if_to_ret_nil LF@&typ1 string@nil\n\
 JUMPIFEQ $&ev_if_to_ret_bool LF@&typ1 string@bool\n\
-#kdyz float tak chyba\n\
+#kdyz jinej float tak chyba\n\
+JUMPIFEQ $&ev_if_to_ret_end_false LF@&op1 float@0x0p+0\n\
 EXIT int@7\n\
 \n\
 label $&ev_if_to_ret_int\n\
@@ -547,7 +552,7 @@ JUMP $&ev_if_to_ret_end_true\n\
 label $&ev_if_to_ret_string\n\
 JUMPIFEQ $&ev_if_to_ret_end_false LF@&op1 string@0\n\
 #nedefinovana promena je chyba\n\
-JUMPIFEQ $&ev_if_to_ret_end_false_exit5 LF@&op1 string@\n\
+JUMPIFEQ $&ev_if_to_ret_end_false LF@&op1 string@\n\
 JUMP $&ev_if_to_ret_end_true\n\
 \n\
 label $&ev_if_to_ret_nil\n\

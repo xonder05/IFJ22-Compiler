@@ -300,9 +300,12 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
     Dyn_String *end = dyn_string_init();
     //check for return type
     dyn_string_add_string(end,"#############CHECK RETURN TYPE###########\n");
-    dyn_string_add_string(end,"TYPE LF@type_var LF@%retval1\n");
-    dyn_string_add_string(end,"JUMPIFEQ $ReturnTypeCheck ");
-    dyn_string_add_string(end,"LF@type_var string@");
+    dyn_string_add_string(end,"DEFVAR LF@type_var_ret\n");
+    dyn_string_add_string(end,"TYPE LF@type_var_ret LF@%retval1\n");
+    dyn_string_add_string(end,"JUMPIFEQ $ReturnTypeCheck");
+    dyn_string_add_string(end,node->declare_func.func_name->name->string);
+    dyn_string_add_char(end,' ');
+    dyn_string_add_string(end,"LF@type_var_ret string@");
 
     switch (node->declare_func.func_name->info.function.returnType)
     {
@@ -323,7 +326,9 @@ int generate_func(node_t *node, inst_list_t *func_list,int *if_count,var_generat
         break;
     }
     dyn_string_add_string(end,"EXIT int@4\n");
-    dyn_string_add_string(end,"LABEL $ReturnTypeCheck\n");
+    dyn_string_add_string(end,"LABEL $ReturnTypeCheck");
+    dyn_string_add_string(end,node->declare_func.func_name->name->string);
+    dyn_string_add_char(end,'\n');
 
 
     dyn_string_add_string(end,"POPFRAME\nRETURN\n");
@@ -402,6 +407,7 @@ int generate_call_func(node_t *node, inst_list_t *main_body_list)
                         dyn_string_add_string(call,"float@");
                         char float_string[100];
                         sprintf(float_string,"%a",par->imm.data.type_float);
+                        dyn_string_add_string(call,float_string);
                         dyn_string_add_char(call,'\n');
                         break;
                     case type_string:
@@ -485,6 +491,7 @@ int generate_call_func_write(node_t *node, inst_list_t *main_body_list)
                         dyn_string_add_string(call,"float@");
                         char float_string[100];
                         sprintf(float_string,"%a",par->imm.data.type_float);
+                        dyn_string_add_string(call,float_string);
                         dyn_string_add_char(call,'\n');
                         break;
                     case type_string:
@@ -669,7 +676,9 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
     case Lesser:
     case GreaterEqual:
     case LesserEqual:
-        //ted se postarat o pravou vetev
+        
+
+                //ted se postarat o pravou vetev
         //pokud sme tady tak v provo je bud hodnota ne bo dalsi expr (ne single)
         //pak ty operace
         switch (node->expression.right->type)
@@ -726,7 +735,8 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
             return 1;
             break;
         }
-
+        instListInsertLast(main_body_list,expression_ev,express);
+        dyn_string_clear(express);
 
         // vlevo je op, bude push
         if(node->expression.left->type == op)
@@ -782,6 +792,7 @@ int ev_expression(node_t *node, inst_list_t *main_body_list)
             dyn_string_add_string(express,"PUSHS nil@nil\n");
 
         }
+
 
 
 
