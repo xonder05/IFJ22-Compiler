@@ -276,6 +276,21 @@ DEFVAR LF@%retval1\n\
 MOVE LF@%retval1 nil@nil\n\
 DEFVAR LF@type_var\n\
 TYPE LF@type_var LF@param1\n\
+JUMPIFEQ $int1 LF@type_var string@string\n\
+JUMPIFEQ $int2 LF@type_var string@float\n\
+JUMPIFEQ $int3 LF@type_var string@int\n\
+JUMPIFEQ $int4 LF@type_var string@bool\n\
+JUMPIFEQ $int5 LF@type_var string@nil\n\
+EXIT int@4\n\
+LABEL $int1\n\
+EXIT int@4\n\
+LABEL $int2\n\
+FLOAT2INT LF@%retval1 LF@param1\n\
+JUMP $int_end\n\
+LABEL $int3\n\
+MOVE LF@%retval1 LF@param1\n\
+JUMP $int_end\n\
+LABEL $int4\n\
 EXIT int@4\n\
 LABEL $int5\n\
 MOVE LF@%retval1 int@0\n\
