@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: abstact_syntax_tree.h
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Daniel Onderka xonder05
+*   Description: Implementation of abstract syntax tree
+*
+*************************************************/
+
 #pragma once 
 #include <stdio.h>
 #include <stdlib.h>

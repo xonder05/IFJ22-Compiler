@@ -1,3 +1,15 @@
+/*************************************************
+* 
+*   file name: abstact_syntax_tree.c
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Daniel Onderka xonder05
+*   Description: Implementation of abstract syntax tree
+*
+*************************************************/
+
+
+
+
 #include "abstact_syntax_tree.h"
 #include "error.h"
 
@@ -581,4 +593,3 @@ void disposeParameters (func_par_t* parameters)
         free(this);
     }
 }
-

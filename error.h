@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: error.h
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Aleksandr Kasinova xkasia01
+*   Description: Error handling
+*
+*************************************************/
+
 #pragma once
 
 typedef enum ERROR_TYPE

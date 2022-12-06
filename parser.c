@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: parser.c
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Aleksandr Kasinova xkasia01
+*   Description: Top-down syntactic analysis
+*
+*************************************************/
+
 #include "parser.h"
 #include "scanner.h"
 #include "expressions.h"

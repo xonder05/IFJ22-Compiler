@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: stack_ast.h
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Aleksandr Kasinova xkasia01
+*   Description: Stack used by asbtract syntax tree
+*
+*************************************************/
+
 #pragma once 
 #include "abstact_syntax_tree.h"
 

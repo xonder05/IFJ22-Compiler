@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: scanner.c
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Ondřej Bahounek xbahou00
+*   Description: Lexical analysis implemented like finite-state machine
+*
+*************************************************/
+
 #include "scanner.h"
 #include "testing_utils.h"
 #include <ctype.h>

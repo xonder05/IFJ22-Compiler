@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: stack.h
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Daniel Onderka xonder05
+*   Description: Implementation of stack used for storing expressions
+*
+*************************************************/
+
 #pragma once 
 #include "scanner.h"
 #include "abstact_syntax_tree.h"

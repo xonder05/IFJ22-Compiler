@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: code_gen_build.c
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Ondřej Bahounek xbahou00
+*   Description: Structures and functions for code generating
+*
+*************************************************/
+
 #include "code_gen_build.h"
 #include "string.h"
 

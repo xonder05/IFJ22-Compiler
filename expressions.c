@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: expressions.h
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Daniel Onderka xonder05
+*   Description: Module for dealing with expressions
+*
+*************************************************/
+
 #include "expressions.h"
 #include "error.h"
 

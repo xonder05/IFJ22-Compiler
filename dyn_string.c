@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: dyn_string.c
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Ondřej Bahounek xbahou00
+*   Description: Dynamic string structure
+*
+*************************************************/
+
 #include "dyn_string.h"
 #include <stdbool.h>
 #include <stdlib.h>

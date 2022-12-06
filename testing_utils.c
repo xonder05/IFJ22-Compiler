@@ -1,9 +1,18 @@
+/*************************************************
+* 
+*   file name: testing_utils.c
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Ondřej Bahounek xbahou00
+*   Description: Utilities for scanner testing
+*
+*************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "scanner.h"
 #include "testing_utils.h"
 
-// bude tezke funckce
+
 void print_token(token_t *token)
 {
 
@@ -57,6 +66,7 @@ void print_token(token_t *token)
     else if(token->type == TOKEN_DIVIDE) printf("TOKEN_DIVIDE\n");
     else if(token->type == TOKEN_PROLOG) printf("TOKEN_PROLOG\n");
     else if(token->type == TOKEN_PROLOG_FAIL) printf("TOKEN_PROLOG_FAIL\n");
+    else if(token->type == TOKEN_END) printf("TOKEN_END\n");
 
 
     else if(token->type == TOKEN_INT)printf("TOKEN_INT, value: %ld\n",token->int_value);    

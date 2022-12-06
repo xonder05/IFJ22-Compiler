@@ -1,3 +1,12 @@
+/*************************************************
+* 
+*   file name: symtable.h
+*   VUT FIT Project Compiler for language IFJ22
+*   Author: Aleksandr Kasinova xkasia01
+*   Description: Implementation of symbol table
+*
+*************************************************/
+
 #pragma once
 
 #include <stdbool.h>
