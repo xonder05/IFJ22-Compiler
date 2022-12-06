@@ -299,6 +299,12 @@ stackItem_t convertrToken(token_t token, symTable_t* table)
                 input.type = NOT_ALLOWED_CHAR;
                 break;
             }
+        case TOKEN_BLANK0:
+        case TOKEN_BLANK1:
+        case TOKEN_BLANK2:
+        case TOKEN_BLANK3:
+            call_error(LEX_ERROR);
+            break;
         default:
             call_error(SYNTAX_ERROR);
             input.type = NOT_ALLOWED_CHAR;
@@ -905,7 +911,6 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
         return result;
     }
 }
-
 
 
 
