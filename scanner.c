@@ -2,6 +2,7 @@
 #include "testing_utils.h"
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 
 
 
@@ -11,6 +12,7 @@ token_t get_token()
     static bool deal_with_start = true;
     token_t token;
     State_t state = STATE_START;
+    bool exp = false; //help var for scientific notation of float
     
     // dealing with prolog: declare(...) separatly outside from fsm
     if(deal_with_start == true)
@@ -177,6 +179,14 @@ token_t get_token()
                 else if(c=='.'){
                     dyn_string_add_char(string,c);
                     state = STATE_FLOAT;
+                    c = getc(stdin);
+                    if(!isdigit(c))
+                    {
+                        token.type = TOKEN_BLANK0;
+                        free_token(token);
+                        return token;
+                    }
+                    ungetc(c,stdin);
                     break;
                 }
                 else{
@@ -193,6 +203,12 @@ token_t get_token()
                     dyn_string_add_char(string,c);
                     break;
                 }
+                else if(c == 'e' || c == 'E')
+                {
+                    dyn_string_add_char(string,'e');
+                    state = STATE_FLOAT_EXP;
+                    break;
+                }
                 else{
                     ungetc(c,stdin);
                     token.type = TOKEN_FLOAT;
@@ -202,6 +218,39 @@ token_t get_token()
                 }
                 break;
             
+            case STATE_FLOAT_EXP:
+                if(exp == false)
+                {   
+                    exp = true;
+                    if(isdigit(c) || c == '+' || c == '-')
+                    {
+                        dyn_string_add_char(string,c);
+                        break;
+                    }
+                    else
+                    {
+                        token.type = TOKEN_BLANK0;
+                        dyn_string_free(string);
+                        return token;
+                    }
+                }
+                else
+                {
+                    exp = true;
+                    if(isdigit(c))
+                    {
+                        dyn_string_add_char(string,c);
+                        break;
+                    }
+                    ungetc(c,stdin);
+                    token.type = TOKEN_FLOAT;
+                    token.float_value = strtod(string->string,NULL);
+                    dyn_string_free(string);
+                    return token;
+                }
+
+
+
             case STATE_ID:
                 if(isalnum(c)|| c == '_'){
                     dyn_string_add_char(string,c);
@@ -712,6 +761,15 @@ token_t deal_with_prolog()
 {
     int c;
     token_t token;
+
+    c = getc(stdin);
+    if(c != '<')
+    {
+        token.type = TOKEN_PROLOG_FAIL;
+        return token;   
+    }
+    ungetc(c,stdin);
+
     token = get_token(0);
 
     if(token.type != TOKEN_START_TAG)
@@ -756,7 +814,23 @@ token_t deal_with_prolog()
  * @return token
  * 
  */
-    if(!isspace(c))
+
+    if(c == '/')
+    {
+        c=getc(stdin);
+        if(c == '/' || c == '*')
+        {
+            ungetc(c,stdin);
+            ungetc('/',stdin);
+        }
+        else
+        {
+            free_token(token);
+            token.type = TOKEN_PROLOG_FAIL;
+            return token;
+        }
+    }
+    else if(!isspace(c))
     {
         free_token(token);
         token.type = TOKEN_PROLOG_FAIL;

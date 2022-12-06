@@ -43,25 +43,7 @@ void instListInsertLast( inst_list_t *list, block_type type,Dyn_String *code)
     elem ->next = NULL;
 }
 
-// void instInsertBeforeWhile( inst_list_t *list, inst_list_elem_ptr elem)
-// {
-//     inst_list_elem_ptr tmp = list->last;
-//     // vracimse pred while
-//     while(tmp->type != while_loop_start && tmp != NULL)
-//     {
-//         tmp = tmp ->previous;
-//     }
-//     //chyba
-//     if(tmp == NULL)
-//     {
-//         return;
-//     }
-//     //insertu za tmp (tzn. pred while)
-//     elem ->previous = tmp;
-//     elem -> next = tmp ->next;
-//     tmp ->next = elem;
-//     elem ->next ->previous = elem;
-// }
+
 
 void instInsertBeforeWhile( inst_list_t *list, block_type type, Dyn_String *code)
 {
@@ -90,6 +72,7 @@ void instInsertBeforeWhile( inst_list_t *list, block_type type, Dyn_String *code
 
         int while_count = 0;
         int if_count = 0;
+
         tmp = list -> last;
         
         while(tmp != NULL)
@@ -126,15 +109,26 @@ void instInsertBeforeWhile( inst_list_t *list, block_type type, Dyn_String *code
             {
                 if_count = if_count - 1;
             }
+            if(tmp->type == if_end)
+            {
+                if_count = if_count + 1;
+            }
+
 
             if(tmp->type == while_loop_start)
             {
                 while_count = while_count -1;
             }
+            if(tmp->type == while_loop_end)
+            {
+                while_count = while_count +1;
+            }
 
             tmp = tmp -> previous;
 
         }
+
+
         inst_list_elem_ptr elem = create_elem(type, code);
         //kdyz je while prvni v listu
 

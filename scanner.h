@@ -94,6 +94,7 @@ typedef enum
     STATE_ID,            // keyword or function id  (NENI V AUTOMATU)
     STATE_INT,          // INT
     STATE_FLOAT,        // FLOAT
+    STATE_FLOAT_EXP,        // FLOAT
     STATE_COMMENT,      // / non finishing
     STATE_LINE_COMMENT, // // non finishing
     STATE_BLOCK_COM,    // /* non finishing

@@ -20,7 +20,7 @@ enum rule_result
 
 enum table_sintax
 {
-    LEFT_TABLE = 2,  // <
+    LEFT_TABLE = 2,  // <empty
     RIGHT_TABLE = 1, // >
     EQUAL_TABLE = 0, //=
     ERORR_TABLE = 3  //empty
