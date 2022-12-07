@@ -34,7 +34,7 @@ typedef enum VariableType
     ERROR_TYPE,
     FLOAT_NULL_TYPE,
     INT_NULL_TYPE,
-    STRING_NULL_TYPE,
+    STRING_NULL_TYPE
 } VariableType_t;
 
 typedef struct argumentsOfFunction
@@ -102,7 +102,9 @@ bool insertPremadeFunction(symTable_t* Table);
 //Symbol
 symbol_t* initSymbol(symbolType_t Type, Dyn_String* Name, Dyn_String* Context);
 
-void freeSymbol(symbol_t* Symbol); //!!! update 
+void freeSymbol(symbol_t* Symbol);
+
+bool isTypeNull(VariableType_t Type);
 
 //Arguments
 argumentsOfFunction_t initArguments();

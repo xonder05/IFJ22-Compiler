@@ -630,6 +630,27 @@ void freeSymbol(symbol_t* Symbol)
 	free(Symbol);
 }
 
+bool isTypeNull(VariableType_t Type)
+{
+	switch (Type)
+	{
+		case INT_TYPE:
+		case FLOAT_TYPE:
+		case STRING_TYPE:
+		case ERROR_TYPE:
+		default:
+			return false;
+
+		case NULL_TYPE:
+		case FLOAT_NULL_TYPE:
+		case INT_NULL_TYPE:
+		case STRING_NULL_TYPE:
+			return true;
+	}
+
+	return false;
+}
+
 argumentsOfFunction_t initArguments()
 {
 	argumentsOfFunction_t arguments;

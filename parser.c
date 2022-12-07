@@ -126,7 +126,6 @@ void get_unprocessed_token()
 {
     if(scanner_result_is_processed)
     {
-        //free_token(scanner_result);
         scanner_result = get_token();
         scanner_result_is_processed = false;
         check_lex_error(scanner_result);
@@ -391,7 +390,7 @@ int delcare_function(symTable_t* Table, stackAST_t* stack)
 
     popStackAST(stack);
 
-    if (NewFunction->info.function.returnType != NULL_TYPE && NewFunction->info.function.haveReturn == false)
+    if (isTypeNull(NewFunction->info.function.returnType) == false && NewFunction->info.function.haveReturn == false)
     {
         freeSymTable(Table);
         call_error(SEMANTIC_PARAM_ERROR);

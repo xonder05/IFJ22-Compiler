@@ -672,7 +672,7 @@ token_t get_token()
                 else if(c == 'i' || c == 'f' || c == 's')
                 {
                     ungetc(c,stdin);
-                    free_token(token);
+                    //free_token(token);
                     token = get_token(5);
                     if(token.type != TOKEN_KEYWORD)
                     {
