@@ -515,7 +515,7 @@ int command_variable(symTable_t* Table, stackAST_t* stack)
     get_unprocessed_token();
     if (scanner_result.type != TOKEN_EQUAL)
     {
-        call_error(SYNTAX_ERROR);
+        call_error(SEMANTIC_VAR_ERROR);
     }
     scanner_result_is_processed = true;
 
