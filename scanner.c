@@ -436,7 +436,7 @@ token_t get_token()
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = STATE_BLANK0;
+                        token.type = TOKEN_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -452,7 +452,7 @@ token_t get_token()
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = STATE_BLANK0;
+                        token.type = TOKEN_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -501,7 +501,7 @@ token_t get_token()
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = STATE_BLANK0;
+                        token.type = TOKEN_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
@@ -518,7 +518,7 @@ token_t get_token()
                     c = getc(stdin);
                     if(c == EOF)
                     {
-                        token.type = STATE_BLANK0;
+                        token.type = TOKEN_BLANK0;
                         ungetc(c,stdin);
                         return token;
                     }
