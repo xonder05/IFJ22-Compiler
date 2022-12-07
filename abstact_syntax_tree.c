@@ -8,11 +8,11 @@
 *************************************************/
 
 
-
-
 #include "abstact_syntax_tree.h"
 #include "error.h"
 
+// all of the creation nodes work pretty much the same, they alloc space for new structure
+// and then deal with pointers according to node's type
 ast_t* createRootNode(bool prologSuccess)
 {
     ast_t *strom = malloc(sizeof(struct abstactSyntaxTree));
@@ -182,6 +182,7 @@ ast_t* createReturnNode(ast_t *expression)
     return strom;
 }
 
+// recursivelly calls itself accoriding to what each node needs to free
 void disposeTree(ast_t* tree)
 {
     if (tree == NULL)
@@ -286,6 +287,7 @@ void disposeTree(ast_t* tree)
         break;
     }
 }
+
 
 void printTree(ast_t *tree)
 {
@@ -437,7 +439,8 @@ void printTree(ast_t *tree)
 
 
 
-
+// encapsulates anoying and confusing work with pointers
+// expect one parameter, the rest should be NULL
 exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_int, double* imm_float, Dyn_String* imm_string)
 {
     exp_subtree_t *tree = malloc(sizeof(exp_subtree_t));
@@ -486,7 +489,6 @@ exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_
     return tree;
 }
 
-
 void diposeExpSubtree(exp_subtree_t* tree)
 {
     if (tree == NULL)
@@ -499,19 +501,21 @@ void diposeExpSubtree(exp_subtree_t* tree)
     case op: case imm: case nul: //simply frees the structure, 
         free(tree);              //in case of op - the symtable record is not touched
         break;
-    case exp:
+    case exp: // has to free both subtrees with recursive calling
         if (tree->data.exp->thiscommand.expression.operator != SingleOp && tree->data.exp->thiscommand.expression.operator != Error)
         {
             diposeExpSubtree(tree->data.exp->thiscommand.expression.right);
         }
         diposeExpSubtree(tree->data.exp->thiscommand.expression.left);
         free(tree);
+        break;
 
     default:
-        //shouldn't happen -- error
+        call_error(OTHERS_ERROR);
         break;
     }
 }
+
 
 
 func_par_t* parInit()
@@ -527,6 +531,7 @@ func_par_t* parInit()
     return parameters;   
 }
 
+// same principle as exp_subtree creation
 func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, long int* int_input, double* float_input, Dyn_String* string_input)
 {
     if (parameters == NULL)
@@ -581,7 +586,6 @@ func_par_t* addParametrer(func_par_t* parameters, symbol_t* symbol, long int* in
     }
     return parameters;
 }
-
 
 void disposeParameters (func_par_t* parameters)
 {

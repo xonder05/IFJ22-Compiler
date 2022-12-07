@@ -30,6 +30,7 @@ typedef struct immediate_operand{
 
 
 // subtree of an expression can consist of multiple different data types
+// structure which can store every possibility
 typedef struct expression_subtree{
     enum sub_tree_type {op, exp, imm, nul}type;
     union exp_sub_uni{
@@ -93,6 +94,7 @@ void printTree(ast_t *tree);
 
 
 // expression subtree operations
+// exprects only one actual parameter, the rest is NULL
 exp_subtree_t* createExpSubtree(symbol_t* symbol, ast_t* subtree, long int* imm_int, double* imm_float, Dyn_String* imm_string);
 void diposeExpSubtree(exp_subtree_t* tree);
 

@@ -20,6 +20,7 @@ typedef enum
     END_OF_EXPRESSION, NOT_ALLOWED_CHAR
 
 } InputChars;
+// reprezentation of terminals allowed in expression + some other
 
 typedef struct stack
 {
@@ -35,7 +36,7 @@ typedef struct stackItem
 } stackItem_t;
 
 
-
+// operations with stack:
 
 //success - new stack
 //fail - null

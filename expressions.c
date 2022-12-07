@@ -11,147 +11,7 @@
 #include "error.h"
 
 
-VariableType_t convertImmTypeToVariableType(imm_type_t imm)
-{
-    VariableType_t output;
-    switch (imm)
-    {
-    case type_int:
-        output = INT_TYPE;
-        break;
-    case type_float:
-        output = FLOAT_TYPE;
-    break;
-    case type_string:
-        output = STRING_TYPE;
-    break;
-    
-    default:
-        output = ERROR_TYPE;
-        break;
-    }
-    return output;
-}
-
-VariableType_t semanticCheck(ast_t* tree)
-{
-    if (tree == NULL)
-    {
-        call_error(OTHERS_ERROR);
-    }
-
-    //only one operator
-    if (tree->thiscommand.expression.operator == SingleOp)
-    {
-        switch (tree->thiscommand.expression.left->type)
-        {
-        case op:
-            return tree->thiscommand.expression.left->data.op->info.variable.curentType;
-        case imm:
-            return convertImmTypeToVariableType(tree->thiscommand.expression.left->data.imm.type);
-        case nul:
-            return NULL_TYPE;
-        default:
-            return ERROR_TYPE;
-        }
-    }
-
-    //otherwise find the resulting type of left subtree
-    VariableType_t left;
-    switch (tree->thiscommand.expression.left->type)
-    {
-    case exp:
-        left = semanticCheck(tree->thiscommand.expression.left->data.exp); 
-        break;
-    case op:
-        left = tree->thiscommand.expression.left->data.op->info.variable.curentType;
-        break;
-    case imm:
-        left = convertImmTypeToVariableType(tree->thiscommand.expression.left->data.imm.type);
-        break;
-    case nul:
-        left = NULL_TYPE;
-        break;
-    default:
-        return ERROR_TYPE;
-        break;
-    }
-
-    //and resulting type of right subtree
-    VariableType_t right;
-    switch (tree->thiscommand.expression.right->type)
-    {
-    case exp:
-        right = semanticCheck(tree->thiscommand.expression.right->data.exp); 
-        break;
-    case op:
-        right = tree->thiscommand.expression.right->data.op->info.variable.curentType;
-        break;
-    case imm:
-        right = convertImmTypeToVariableType(tree->thiscommand.expression.right->data.imm.type);
-        break;
-    case nul:
-        right = NULL_TYPE;
-        break;
-    default:
-        return ERROR_TYPE;
-        break;
-    }
-    
-    //if either of them returned error, do it too
-    if (left == ERROR_TYPE || right == ERROR_TYPE)
-    {
-        return ERROR_TYPE;
-    }
-
-    //based on the operator decide what to do
-    switch (tree->thiscommand.expression.operator)
-    {
-    case Plus: case Minus: case Multiply:
-        if ( (left == INT_TYPE && right == INT_TYPE) || (left == FLOAT_TYPE && right == FLOAT_TYPE) )
-        {
-            return left;
-        }
-        else if ( (left == INT_TYPE || right == INT_TYPE) && (left == FLOAT_TYPE || right == FLOAT_TYPE) )
-        {
-            return FLOAT_TYPE;
-        }
-        else
-        {
-            return ERROR_TYPE;
-        }
-        break;
-
-    case Divide:
-        if ( (left == INT_TYPE || left == FLOAT_TYPE) && (right == INT_TYPE || right == FLOAT_TYPE) )
-        {
-            return FLOAT_TYPE;
-        }
-        else
-        {
-            return ERROR_TYPE;
-        }
-        break;
-
-    case Dot:
-        if ( (left == STRING_TYPE || left == INT_TYPE || left == FLOAT_TYPE) && (right == STRING_TYPE || right == INT_TYPE || right == FLOAT_TYPE) )
-        {
-            return STRING_TYPE;
-        }
-        break;
-
-    case Equal: case NotEqual: case Greater: case Lesser: case GreaterEqual: case LesserEqual:
-        return NULL_TYPE;
-    break;
-
-    default:
-        break;
-    }
-
-    return ERROR_TYPE;
-}
-
-
+// converting inputChars used in precedenc parser to operator used in ast_t
 operator convertInputCharsToOperator(InputChars input)
 {
         int output;
@@ -197,7 +57,7 @@ operator convertInputCharsToOperator(InputChars input)
         return output;
 }
 
-
+// converting token structure to inputChars, the intention was to simplify things
 stackItem_t convertrToken(token_t token, symTable_t* table)
 {
     stackItem_t input;
@@ -266,6 +126,7 @@ stackItem_t convertrToken(token_t token, symTable_t* table)
             ungetc(';', stdin);
             break;
         
+        // when converting acctual values leaf node of ast_t must be created
         case TOKEN_INT:
             input.type = I;
             input.data = createExpSubtree(NULL, NULL, &token.int_value, NULL, NULL);
@@ -340,7 +201,7 @@ stackItem_t getNewInput(symTable_t* table)
     return input;
 }
 
-
+// finds the nonterminal closest to top of stack
 stackItem_t closestToTopNonTerminal(stack_t *stack)
 {
     int i = 0;
@@ -354,6 +215,7 @@ stackItem_t closestToTopNonTerminal(stack_t *stack)
     return stacktop;
 }
 
+// called when shifting to stack, inserts handle above nonterminal closest to top of stack
 int insertHandle(stack_t *stack)
 {
     stackItem_t handle = closestToTopNonTerminal(stack);
@@ -361,7 +223,7 @@ int insertHandle(stack_t *stack)
 
     if (handle.type == EMPTY || top.type == EMPTY)
     {
-        return 1;
+        call_error(OTHERS_ERROR);
     }
 
     stackItem_t *ptr = malloc(sizeof(stackItem_t));
@@ -399,6 +261,8 @@ int insertHandle(stack_t *stack)
     return 0;
 }
 
+// operation from precedenc table
+// < shift input to stack
 int shiftToStack(stack_t *stack, stackItem_t input)
 {
     if (insertHandle(stack) == true)
@@ -412,11 +276,13 @@ int shiftToStack(stack_t *stack, stackItem_t input)
     return 0;
 }
 
+// operation from precedenc table
+// reduce sequence on stack into one expression
 int reduce(stack_t *stack)
 {
     if (stack == NULL)
     {
-        return 1;
+        call_error(OTHERS_ERROR);
     }
 
     stackItem_t top = topStack(stack, 0);
@@ -424,8 +290,9 @@ int reduce(stack_t *stack)
     {
         return 1;
     }
-    
-    if (top.type == I)
+
+// three ways to reduce items on stack  
+    if (top.type == I) //STACK:  I -> H
     {
         if (topStack(stack, 1).type == HANDLE )
         {
@@ -471,7 +338,11 @@ int reduce(stack_t *stack)
             stackItem_t right = topStack(stack, 2);
             stackItem_t op = topStack(stack, 1);
 
-            if (convertInputCharsToOperator(op.type) == -1) { call_error(SEMANTIC_COMPABILITY_ERROR);}
+            if (convertInputCharsToOperator(op.type) == -1) 
+            { 
+                call_error(SEMANTIC_COMPABILITY_ERROR);
+            }
+
             ast_t* node = createExpressionNode(convertInputCharsToOperator(op.type), left.data, right.data);
             
             stackItem_t item;
@@ -529,7 +400,6 @@ int plus(stack_t *stack, stackItem_t input, bool *nextInput)
         return 1;
     }
 }
-
 int minus(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     switch (input.type)
@@ -732,7 +602,6 @@ int rpar(stack_t *stack, stackItem_t input, bool *nextInput)
         return 1;
     }
 }
-
 int i(stack_t *stack, stackItem_t input, bool *nextInput)
 {
     switch (input.type)
@@ -746,6 +615,7 @@ int i(stack_t *stack, stackItem_t input, bool *nextInput)
         return 1;
     }
 }
+
 
 ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
 {
@@ -789,11 +659,12 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
 
 
     //main cycle
+    // reprezents picking a line in precedence table (based on neterminal closest to top of stack)
     do{
-        if (fail == true) {break;}
-        //printf("--------------new round--------------\n");
-        //printf("input %d, stacktop %d\n", input.type, stacktop.type);
-        //printStack(stack);
+        if (fail == true) 
+        {
+            break;
+        }
 
         switch (stacktop.type)
         {
@@ -864,36 +735,37 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
             }
         }
 
+        // updating what is on top of stack
         stacktop = closestToTopNonTerminal(stack);
         if (stacktop.type == EMPTY) 
         {
-            fail = true;
+            call_error(OTHERS_ERROR);
         }
 
     } while (input.type != END_OF_EXPRESSION || topStack(stack, 0).type != EXPRESSION || topStack(stack, 1).type != STARTEND);
+    //if you found terminal which can follow after expression and stack has only one expression on it => end the cycle
 
 
-    //printStack(stack);
-
-    if (fail == true)
+    if (fail == true) // if the cycle ended because of error
     {
-        if (stack->items == 1 && stack->top->type == STARTEND)
+        if (stack->items == 1 && stack->top->type == STARTEND) // if the expression is empty
         {
             diposeExpSubtree(stack->top->data);
             disposeStack(stack);
             *result_err = 0;
             return NULL;
         }
-
+        // other error
         diposeExpSubtree(stack->top->data);
         disposeStack(stack);
         *result_err = -1;
         return NULL;
     }
-    else
+    else // if the cycle ended in natural way
     {
+        // creating resulting syntax tree
         stackItem_t item = topStack(stack, 0);
-        ast_t* result;
+        ast_t* result = NULL;
         
         switch (item.data->type)
         {
@@ -913,7 +785,6 @@ ast_t* expresion(token_t scanner_result, symTable_t* table, int* result_err)
             call_error(OTHERS_ERROR);
             break;
         }
-
 
         disposeStack(stack);
         *result_err = 1;
